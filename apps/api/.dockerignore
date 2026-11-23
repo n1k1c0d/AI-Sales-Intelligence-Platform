@@ -1,0 +1,10 @@
+# Send only package sources and inputs required by uv and Hatchling.
+**
+!.python-version
+!pyproject.toml
+!uv.lock
+!README.md
+!src/
+!src/**/
+!src/**/*.py
+!src/**/py.typed

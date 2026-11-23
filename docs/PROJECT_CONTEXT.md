@@ -71,7 +71,9 @@ FastAPI Backend владеет бизнес-правилами и изменен
 
 DM-003 подготовила устанавливаемый пакет `dealmind-api` для Python 3.12 с src-layout, uv и инструментами качества. В DM-004 появился FastAPI Backend на Pydantic v2 и Uvicorn. Фабрика создаёт независимые экземпляры, ASGI entrypoint запускает API, а lifespan управляет готовностью. Маршруты `/api/v1/health` и `/api/v1/ready` возвращают типизированные ответы. Dependency готовности подменяется в HTTP-тестах. Единый формат ошибок, OpenAPI и Swagger доступны локально. [Окружение, HTTP-контракты и команды](../apps/api/README.md)
 
-Следующий шаг — DM-005, Docker Compose и PostgreSQL. Реальная DB readiness относится к DM-007. Production-конфигурация, аутентификация, CRM API, аналитика, workflows n8n, RAG, AI Deal Analyst и frontend остаются в плане. [Порядок задач и критерии готовности этапа](ROADMAP.md)
+В DM-005 Docker Compose запускает образ существующего FastAPI, PostgreSQL 17 с расширением pgvector и self-hosted n8n. Сервисы используют общую bridge-сеть, отдельные проверки готовности и шаблон окружения. Данные PostgreSQL и SQLite n8n хранятся в двух именованных томах. Инфраструктурный smoke-тест проверяет HTTP, реальный SQL, векторное расстояние и обращение n8n к API. [Запуск и эксплуатация](../infra/docker/README.md) · [Проверки DM-005](tasks/DM-005.md)
+
+Централизованные настройки и структурированные логи запланированы в DM-006. Подключение SQLAlchemy, Alembic и проверка БД через readiness относятся к DM-007. CRM-модели и аналитика, workflows n8n, frontend, RAG и AI Deal Analyst остаются в плане. [Порядок задач](ROADMAP.md)
 
 ## Ограничения и открытые вопросы
 

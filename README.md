@@ -10,8 +10,8 @@ DealMind проектируется для отдела продаж онлай�
 
 | Статус | Что доступно или запланировано |
 | --- | --- |
-| Implemented | В monorepo работает локальный FastAPI Backend с liveness, readiness приложения, Swagger UI и единым JSON-контрактом ошибок. Есть тесты упаковки и HTTP-контрактов, Ruff и Mypy strict. |
-| In Progress | Идёт PHASE 0. Следующий шаг — Docker Compose и PostgreSQL в DM-005. |
+| Implemented | Docker Compose запускает FastAPI, PostgreSQL 17 с pgvector и n8n. Доступны Swagger UI, health и readiness приложения, единый JSON-контракт ошибок, тесты API и инфраструктурный smoke-тест. |
+| In Progress | Идёт PHASE 0. Следующий этап по roadmap — настройки приложения и логирование. |
 | Planned | API для синтетических CRM-данных, аналитика, Risk Engine, поиск по базе знаний с цитатами, AI Deal Analyst, интерфейс согласования и автоматизации через n8n. |
 
 ## Технологический стек
@@ -41,6 +41,8 @@ FastAPI Backend объединит доменные модули в одном �
 .
 ├── .editorconfig
 ├── .gitignore
+├── .env.example         # Шаблон локальных настроек Compose
+├── docker-compose.yml   # API, PostgreSQL с pgvector и n8n
 ├── .github/workflows/   # Зарезервировано для CI
 ├── apps/
 │   ├── api/             # Python-пакет, uv.lock и smoke-тесты
@@ -67,6 +69,24 @@ uv run --locked uvicorn dealmind.main:app --reload --host 127.0.0.1 --port 8000
 
 Откройте `http://127.0.0.1:8000/docs` для Swagger UI или `/openapi.json` на том же сервере для схемы. Маршруты `GET /api/v1/health` и `GET /api/v1/ready` показывают доступность процесса и готовность приложения. Текущая проверка готовности выполняется без БД. [Установка, проверки и сборка backend](apps/api/README.md)
 
+## Local Development with Docker
+
+Из корня репозитория можно поднять API, PostgreSQL 17 с pgvector и n8n. Нужны запущенный Docker Engine с поддержкой Linux-контейнеров и команда `docker compose` (Compose V2 или совместимая новая версия). На Windows это обеспечивает [Docker Desktop](https://docs.docker.com/desktop/setup/install/windows-install/).
+
+1. При первой настройке скопируйте `.env.example` в `.env`. В PowerShell используйте `Copy-Item .env.example .env`, в Bash — `cp .env.example .env`. Если файл уже существует, сохраните его значения.
+2. Заполните `POSTGRES_PASSWORD` и `N8N_ENCRYPTION_KEY` двумя независимыми случайными значениями. Для каждого можно выполнить `python -c "import secrets; print(secrets.token_hex(32))"`. Храните ключ n8n вместе с резервной копией данных. Реальный `.env` исключён из Git.
+3. Если порт занят, измените в `.env` соответствующий `*_HOST_PORT`. Проверьте конфигурацию и запустите сервисы.
+
+```shell
+docker compose config --quiet
+docker compose up -d --build --wait
+docker compose ps
+```
+
+При портах из шаблона Swagger UI доступен по `http://127.0.0.1:8000/docs`, OpenAPI — по `/openapi.json` на том же сервере. PostgreSQL слушает `127.0.0.1:5433`, редактор n8n — `http://127.0.0.1:5678`. При первом входе в n8n создайте локальную учётную запись владельца. Фактические порты можно посмотреть через `docker compose ps`.
+
+Для диагностики используйте `docker compose logs --tail 50 api` или подставьте имя другого сервиса. Команда `docker compose down` останавливает окружение и сохраняет данные. **Флаг `-v` удаляет тома PostgreSQL и n8n.** Если запуск завершается ошибкой, проверьте доступность Engine, занятость портов и заполнение `.env`. [SQL-проверки, сеть, тома и устранение ошибок](infra/docker/README.md)
+
 ## Roadmap
 
 Разработка проходит через семь этапов. Сначала команда готовит локальное окружение (0), затем CRM-модель и аналитику (1), интеграции n8n (2), базу знаний и RAG (3), AI Deal Analyst (4), пользовательский интерфейс (5) и демонстрационный релиз с измерениями и сценариями (6). [Задачи, зависимости и критерии приёмки](docs/ROADMAP.md)
@@ -80,6 +100,7 @@ uv run --locked uvicorn dealmind.main:app --reload --host 127.0.0.1 --port 8000
 - Структура monorepo и проверка правил Git — [DM-002](docs/tasks/DM-002.md).
 - Python-окружение, упаковка и результаты приёмки — [DM-003](docs/tasks/DM-003.md).
 - Контракты HTTP API и результаты проверки Uvicorn — [DM-004](docs/tasks/DM-004.md).
+- Локальное Docker-окружение и проверка сохранности данных — [DM-005](docs/tasks/DM-005.md).
 - Полный исходный замысел и правила разработки — [Master Specification v1.0](docs/MASTER_SPEC.md).
 
 ## Ограничения
