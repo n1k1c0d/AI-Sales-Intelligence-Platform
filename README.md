@@ -10,8 +10,8 @@ DealMind проектируется для отдела продаж онлай�
 
 | Статус | Что доступно или запланировано |
 | --- | --- |
-| Implemented | DM-001 зафиксировала границы MVP, архитектуру и план работ. В DM-002 принят каркас monorepo с шестью компонентными README, правилами Git ignore и EditorConfig. |
-| In Progress | Идёт PHASE 0. Следующая задача DM-003 готова к началу — настройка Python-окружения в `apps/api/`. |
+| Implemented | Определены границы MVP и архитектура, подготовлен monorepo. В `apps/api/` устанавливается Python-пакет, работают тесты упаковки, Ruff и Mypy strict. |
+| In Progress | Идёт PHASE 0. Следующий шаг — базовое FastAPI-приложение в DM-004. |
 | Planned | API для синтетических CRM-данных, аналитика, Risk Engine, поиск по базе знаний с цитатами, AI Deal Analyst, интерфейс согласования и автоматизации через n8n. |
 
 ## Технологический стек
@@ -43,7 +43,7 @@ FastAPI Backend объединит доменные модули в одном �
 ├── .gitignore
 ├── .github/workflows/   # Зарезервировано для CI
 ├── apps/
-│   ├── api/             # Python Backend
+│   ├── api/             # Python-пакет, uv.lock и smoke-тесты
 │   └── web/             # Next.js Frontend
 ├── automations/n8n/     # Экспорты workflows и примеры интеграций
 ├── data/demo/           # Синтетические данные
@@ -57,7 +57,15 @@ FastAPI Backend объединит доменные модули в одном �
 
 ## Getting Started
 
-Сейчас можно изучить документацию. Приложения, Docker Compose и набор данных появятся в следующих задачах PHASE 0 и PHASE 1. Проверенные команды запуска и остановки будут опубликованы в DM-011 и пройдут проверку на чистом окружении в DM-012. [Roadmap](docs/ROADMAP.md)
+Для работы с Python-пакетом потребуется uv и Python 3.12. Из корня репозитория выполните
+
+```shell
+cd apps/api
+uv sync --locked
+uv run --locked pytest
+```
+
+Эти команды устанавливают пакет и проверяют импорт и метаданные. HTTP-сервис, Docker Compose и CRM-данные появятся на следующих этапах. [Установка, проверки и сборка backend](apps/api/README.md)
 
 ## Roadmap
 
@@ -70,6 +78,7 @@ FastAPI Backend объединит доменные модули в одном �
 - Обоснование модульного монолита и границ n8n — [ADR-0001](docs/adr/0001-modular-monolith.md).
 - Состав работ и приёмка архитектурной задачи — [DM-001](docs/tasks/DM-001.md).
 - Структура monorepo и проверка правил Git — [DM-002](docs/tasks/DM-002.md).
+- Python-окружение, упаковка и результаты приёмки — [DM-003](docs/tasks/DM-003.md).
 - Полный исходный замысел и правила разработки — [Master Specification v1.0](docs/MASTER_SPEC.md).
 
 ## Ограничения

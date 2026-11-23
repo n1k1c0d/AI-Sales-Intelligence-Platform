@@ -45,6 +45,8 @@ flowchart LR
 
 ## 5. Границы модулей backend
 
+Python-код размещается в `apps/api/src/dealmind/`. В `apps/api/` команда `uv sync --locked` устанавливает distribution `dealmind-api` в локальное окружение. При разработке импорт `dealmind` разрешается из src-layout через editable-установку, при установке wheel — из установленного артефакта. Таблица описывает будущие слои внутри этого пакета. [Установка и упаковка](../apps/api/README.md)
+
 | Слой | Ответственность и допустимые зависимости |
 | --- | --- |
 | API / Presentation | Routes и Pydantic schemas проверяют форму запроса, получают контекст пользователя, вызывают application service и переводят результат в HTTP. |
