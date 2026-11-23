@@ -69,9 +69,9 @@ FastAPI Backend владеет бизнес-правилами и изменен
 
 **PHASE 0 — Project Foundation.** DM-001 и DM-002 — DONE. Приняты архитектура, границы MVP и структура monorepo. Для приложений выделен `apps/`, для интеграций — `automations/n8n/`, синтетических данных — `data/demo/`, инфраструктуры — `infra/docker/`, утилит — `scripts/`. Каждая область описана в своём README. Правила Git ignore и форматирования общие для monorepo. [Приёмка DM-002](tasks/DM-002.md)
 
-DM-003 — DONE. В `apps/api/` подготовлен Python-пакет для разработки на Python 3.12. uv управляет локальным окружением и lock-файлом. Distribution `dealmind-api` предоставляет пакет `dealmind` из `src/`. Внешних runtime-зависимостей пока нет. Группа `dev` включает Ruff, Mypy strict и pytest. Smoke-тесты проверяют импорт и метаданные. [Окружение и команды](../apps/api/README.md)
+DM-003 подготовила устанавливаемый пакет `dealmind-api` для Python 3.12 с src-layout, uv и инструментами качества. В DM-004 появился FastAPI Backend на Pydantic v2 и Uvicorn. Фабрика создаёт независимые экземпляры, ASGI entrypoint запускает API, а lifespan управляет готовностью. Маршруты `/api/v1/health` и `/api/v1/ready` возвращают типизированные ответы. Dependency готовности подменяется в HTTP-тестах. Единый формат ошибок, OpenAPI и Swagger доступны локально. [Окружение, HTTP-контракты и команды](../apps/api/README.md)
 
-Следующий шаг — базовое FastAPI-приложение в DM-004. Подключение к БД, Docker Compose, workflows n8n, RAG, AI Deal Analyst и frontend предусмотрены дальнейшими задачами. [Порядок задач и критерии готовности этапа](ROADMAP.md)
+Следующий шаг — DM-005, Docker Compose и PostgreSQL. Реальная DB readiness относится к DM-007. Production-конфигурация, аутентификация, CRM API, аналитика, workflows n8n, RAG, AI Deal Analyst и frontend остаются в плане. [Порядок задач и критерии готовности этапа](ROADMAP.md)
 
 ## Ограничения и открытые вопросы
 

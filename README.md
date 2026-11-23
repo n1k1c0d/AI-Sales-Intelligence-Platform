@@ -10,8 +10,8 @@ DealMind проектируется для отдела продаж онлай�
 
 | Статус | Что доступно или запланировано |
 | --- | --- |
-| Implemented | Определены границы MVP и архитектура, подготовлен monorepo. В `apps/api/` устанавливается Python-пакет, работают тесты упаковки, Ruff и Mypy strict. |
-| In Progress | Идёт PHASE 0. Следующий шаг — базовое FastAPI-приложение в DM-004. |
+| Implemented | В monorepo работает локальный FastAPI Backend с liveness, readiness приложения, Swagger UI и единым JSON-контрактом ошибок. Есть тесты упаковки и HTTP-контрактов, Ruff и Mypy strict. |
+| In Progress | Идёт PHASE 0. Следующий шаг — Docker Compose и PostgreSQL в DM-005. |
 | Planned | API для синтетических CRM-данных, аналитика, Risk Engine, поиск по базе знаний с цитатами, AI Deal Analyst, интерфейс согласования и автоматизации через n8n. |
 
 ## Технологический стек
@@ -57,15 +57,15 @@ FastAPI Backend объединит доменные модули в одном �
 
 ## Getting Started
 
-Для работы с Python-пакетом потребуется uv и Python 3.12. Из корня репозитория выполните
+Для локального API потребуются uv и Python 3.12. Из корня репозитория выполните
 
 ```shell
 cd apps/api
 uv sync --locked
-uv run --locked pytest
+uv run --locked uvicorn dealmind.main:app --reload --host 127.0.0.1 --port 8000
 ```
 
-Эти команды устанавливают пакет и проверяют импорт и метаданные. HTTP-сервис, Docker Compose и CRM-данные появятся на следующих этапах. [Установка, проверки и сборка backend](apps/api/README.md)
+Откройте `http://127.0.0.1:8000/docs` для Swagger UI или `/openapi.json` на том же сервере для схемы. Маршруты `GET /api/v1/health` и `GET /api/v1/ready` показывают доступность процесса и готовность приложения. Текущая проверка готовности выполняется без БД. [Установка, проверки и сборка backend](apps/api/README.md)
 
 ## Roadmap
 
@@ -79,6 +79,7 @@ uv run --locked pytest
 - Состав работ и приёмка архитектурной задачи — [DM-001](docs/tasks/DM-001.md).
 - Структура monorepo и проверка правил Git — [DM-002](docs/tasks/DM-002.md).
 - Python-окружение, упаковка и результаты приёмки — [DM-003](docs/tasks/DM-003.md).
+- Контракты HTTP API и результаты проверки Uvicorn — [DM-004](docs/tasks/DM-004.md).
 - Полный исходный замысел и правила разработки — [Master Specification v1.0](docs/MASTER_SPEC.md).
 
 ## Ограничения

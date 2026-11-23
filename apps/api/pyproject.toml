@@ -4,10 +4,15 @@ version = "0.1.0"
 description = "Backend package for the DealMind sales intelligence platform"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "fastapi>=0.165.0",
+    "pydantic>=2,<3",
+    "uvicorn>=0.54.0",
+]
 
 [dependency-groups]
 dev = [
+    "httpx>=0.28.1",
     "mypy>=2.4.1",
     "pytest>=9.2.0",
     "ruff>=0.17.6",
@@ -24,7 +29,7 @@ exclude = ["**/.gitkeep"]
 packages = ["src/dealmind"]
 
 [tool.hatch.build.targets.sdist]
-include = ["/src/dealmind", "/tests/unit/*.py", "/.python-version", "/uv.lock"]
+include = ["/src/dealmind", "/tests/**/*.py", "/.python-version", "/uv.lock"]
 
 [tool.ruff]
 target-version = "py312"
