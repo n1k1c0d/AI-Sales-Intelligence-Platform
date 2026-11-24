@@ -14,6 +14,7 @@
 | `src/dealmind/py.typed` | Маркер типизации, который поставляется в wheel |
 | `src/dealmind/main.py` | Фабрика приложения, lifespan и точка входа Uvicorn |
 | `src/dealmind/api/` | Общий router с префиксом `/api/v1`, маршруты, dependency готовности и обработчики исключений |
+| `src/dealmind/core/` | Модель настроек, JSON formatter и контекст запроса |
 | `src/dealmind/schemas/` | Публичные Pydantic-модели системных ответов и ошибок |
 | `tests/unit/test_package_import.py` | Smoke-тесты импорта пакета и установленных метаданных |
 | `tests/integration/` | HTTP-тесты, изоляция состояния, коды ошибок и OpenAPI |
@@ -36,7 +37,7 @@ uv lock --check
 ## Локальный запуск
 
 ```shell
-uv run --locked uvicorn dealmind.main:app --reload --host 127.0.0.1 --port 8000
+uv run --locked uvicorn dealmind.main:app --reload --no-access-log --host 127.0.0.1 --port 8000
 ```
 
 Оставьте процесс в терминале на время работы. Для остановки нажмите Ctrl+C. Если порт занят, укажите `--port 8001` и замените порт в адресах ниже. На 8001 проверены запуск с reload, реальные запросы curl и отображение Swagger UI.
@@ -109,6 +110,35 @@ Hatchling собирает source distribution (`.tar.gz`) и wheel (`.whl`) в 
 
 Команда `docker compose up -d --build --wait` запускает всё окружение. Docker проверяет `/api/v1/health` изнутри контейнера через стандартную библиотеку Python. `/api/v1/ready` по-прежнему проверяет lifespan приложения. PostgreSQL и n8n имеют собственные проверки. `API_HOST_PORT` выбирает порт хоста, внутри сети API всегда слушает `api:8000`. Пароль PostgreSQL и ключ n8n передаются только своим сервисам. [Инфраструктурный runbook](../../infra/docker/README.md)
 
+## Configuration & Logging
+
+| Переменная | Default | Допустимые значения |
+| --- | --- | --- |
+| `APP_ENV` | `local` | `local`, `test`, `production` |
+| `APP_LOG_LEVEL` | `INFO` | `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL` |
+| `APP_CORS_ORIGINS` | `[]` | JSON-массив HTTP(S) origins, например `["http://localhost:3000"]` |
+
+Фабрика создаёт один неизменяемый `Settings` для приложения. Для тестов можно передать `create_app(settings=Settings(env="test"))`. В маршруте зависимость `Depends(get_settings)` возвращает тот же объект. Pydantic Settings читает переменные процесса. Поиск dotenv-файлов выключен. В режиме `production` действуют те же правила валидации. [Pydantic Settings](https://docs.pydantic.dev/latest/concepts/pydantic_settings/)
+
+В PowerShell из `apps/api` можно запустить API с локальными переопределениями. В Bash те же значения задаются через `export`.
+
+```powershell
+$env:APP_ENV = 'local'
+$env:APP_LOG_LEVEL = 'DEBUG'
+$env:APP_CORS_ORIGINS = '["http://localhost:3000"]'
+uv run --locked uvicorn dealmind.main:app --reload --no-access-log
+```
+
+При запуске через Docker Compose корневой `.env` используется для подстановки. Секция `api.environment` передаёт в контейнер три `APP_*`. После изменения значений выполните из корня `docker compose up -d --build --wait api`. Обычный `restart` использует прежнее окружение контейнера. При ошибке запуска проверьте написание режима, регистр уровня и синтаксис JSON. Пустое значение известной переменной вызывает ошибку. Для пустого списка origins используйте `[]`.
+
+**Корреляция.** Каждый ответ содержит `X-Request-ID`. Можно передать свой UUID v4. Приложение канонизирует корректный UUID и создаёт новый при отсутствующем, неоднозначном или некорректном заголовке. После запроса найдите возвращённое значение в `docker compose logs --no-log-prefix api`. При локальном запуске идентификатор виден в терминале.
+
+**Формат.** Прикладной logger доступен через `request.app.state.logger`. Он пишет в stderr по одному JSON-объекту на строку. Событие `http.request.completed` уровня INFO содержит время UTC, уровень, logger, сообщение, сервис, среду, ID, HTTP-метод, шаблон маршрута, код ответа и длительность в миллисекундах. Для неизвестного маршрута используется `<unmatched>`. У неожиданной ошибки отдельное событие `http.request.failed` уровня ERROR с типом исключения. При обрыве уже начатого ответа оно сохраняет отправленный статус. Для диагностики используйте статические сообщения и предусмотренные поля. Тела, cookies, заголовки авторизации, query и текст исключения в HTTP-лог не записываются. Порог WARNING и выше скрывает обычные INFO-записи. Служебные сообщения запуска Uvicorn используют собственный формат.
+
+**CORS.** Укажите сериализованный origin браузера со схемой и при необходимости портом. Пути, завершающий слеш, параметры, фрагменты, userinfo и wildcard отклоняются. Для разрешённого origin браузер получает доступ к `X-Request-ID`. Preflight поддерживает GET, HEAD, POST, PUT, PATCH, DELETE, OPTIONS и заголовки Content-Type, Authorization, X-Request-ID. Отправка cookies с credentials отключена. Если браузер отклонил запрос, сравните его Origin со списком и проверьте ответ OPTIONS.
+
+Для проверки конфигурации, ошибок, параллельных запросов и CORS выполните `uv run --locked pytest -v` из `apps/api`. [Результаты приёмки DM-006](../../docs/tasks/DM-006.md)
+
 ## Дальнейшая разработка
 
-Конфигурация и логирование относятся к DM-006, подключение backend к БД — к DM-007. Доменные модули CRM, аналитика и AI-сценарии запланированы на последующие этапы. [Архитектура](../../docs/ARCHITECTURE.md) · [Roadmap](../../docs/ROADMAP.md)
+Подключение backend к БД относится к DM-007. Доменные модули CRM, аналитика и AI-сценарии запланированы на последующие этапы. [Архитектура](../../docs/ARCHITECTURE.md) · [Roadmap](../../docs/ROADMAP.md)

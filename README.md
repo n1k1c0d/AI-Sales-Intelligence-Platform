@@ -10,8 +10,8 @@ DealMind проектируется для отдела продаж онлай�
 
 | Статус | Что доступно или запланировано |
 | --- | --- |
-| Implemented | Docker Compose запускает FastAPI, PostgreSQL 17 с pgvector и n8n. Доступны Swagger UI, health и readiness приложения, единый JSON-контракт ошибок, тесты API и инфраструктурный smoke-тест. |
-| In Progress | Идёт PHASE 0. Следующий этап по roadmap — настройки приложения и логирование. |
+| Implemented | Docker Compose запускает FastAPI, PostgreSQL 17 с pgvector и n8n. Доступны Swagger UI, health и readiness приложения, единый JSON-контракт ошибок, настройки APP_*, CORS, X-Request-ID, структурированные логи, тесты API и инфраструктурный smoke-тест. |
+| In Progress | Идёт PHASE 0. Следующий этап по roadmap — подключение SQLAlchemy и миграции Alembic. |
 | Planned | API для синтетических CRM-данных, аналитика, Risk Engine, поиск по базе знаний с цитатами, AI Deal Analyst, интерфейс согласования и автоматизации через n8n. |
 
 ## Технологический стек
@@ -64,10 +64,12 @@ FastAPI Backend объединит доменные модули в одном �
 ```shell
 cd apps/api
 uv sync --locked
-uv run --locked uvicorn dealmind.main:app --reload --host 127.0.0.1 --port 8000
+uv run --locked uvicorn dealmind.main:app --reload --no-access-log --host 127.0.0.1 --port 8000
 ```
 
 Откройте `http://127.0.0.1:8000/docs` для Swagger UI или `/openapi.json` на том же сервере для схемы. Маршруты `GET /api/v1/health` и `GET /api/v1/ready` показывают доступность процесса и готовность приложения. Текущая проверка готовности выполняется без БД. [Установка, проверки и сборка backend](apps/api/README.md)
+
+Настройки процесса задают режим приложения, порог логирования и разрешённые origins. По заголовку `X-Request-ID` ответа можно найти событие в JSON-логах API. [Настройки и диагностика](apps/api/README.md#configuration--logging)
 
 ## Local Development with Docker
 
@@ -101,6 +103,7 @@ docker compose ps
 - Python-окружение, упаковка и результаты приёмки — [DM-003](docs/tasks/DM-003.md).
 - Контракты HTTP API и результаты проверки Uvicorn — [DM-004](docs/tasks/DM-004.md).
 - Локальное Docker-окружение и проверка сохранности данных — [DM-005](docs/tasks/DM-005.md).
+- Настройки, корреляция запросов и проверка CORS — [DM-006](docs/tasks/DM-006.md).
 - Полный исходный замысел и правила разработки — [Master Specification v1.0](docs/MASTER_SPEC.md).
 
 ## Ограничения

@@ -73,7 +73,9 @@ DM-003 подготовила устанавливаемый пакет `dealmin
 
 В DM-005 Docker Compose запускает образ существующего FastAPI, PostgreSQL 17 с расширением pgvector и self-hosted n8n. Сервисы используют общую bridge-сеть, отдельные проверки готовности и шаблон окружения. Данные PostgreSQL и SQLite n8n хранятся в двух именованных томах. Инфраструктурный smoke-тест проверяет HTTP, реальный SQL, векторное расстояние и обращение n8n к API. [Запуск и эксплуатация](../infra/docker/README.md) · [Проверки DM-005](tasks/DM-005.md)
 
-Централизованные настройки и структурированные логи запланированы в DM-006. Подключение SQLAlchemy, Alembic и проверка БД через readiness относятся к DM-007. CRM-модели и аналитика, workflows n8n, frontend, RAG и AI Deal Analyst остаются в плане. [Порядок задач](ROADMAP.md)
+В DM-006 каждый экземпляр API получает собственные Pydantic Settings, CORS и JSON-логгер. `APP_ENV`, `APP_LOG_LEVEL` и `APP_CORS_ORIGINS` управляют настройками процесса. Middleware связывает ответы и HTTP-логи по `X-Request-ID` через ContextVar, измеряет длительность и безопасно регистрирует ошибки. Настройки, логи, конкурентные запросы и CORS покрыты тестами. Распределённая трассировка, сбор логов во внешнем сервисе, постоянный audit log, AI tracing и CRM-интеграции остаются в плане. [Приёмка DM-006](tasks/DM-006.md)
+
+Подключение SQLAlchemy, Alembic и проверка БД через readiness относятся к DM-007. CRM-модели и аналитика, workflows n8n, frontend, RAG и AI Deal Analyst остаются в плане. [Порядок задач](ROADMAP.md)
 
 ## Ограничения и открытые вопросы
 
