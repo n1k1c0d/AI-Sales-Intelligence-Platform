@@ -1,0 +1,1 @@
+Run Alembic from apps/api or pass -c apps/api/alembic.ini. See the database section of the backend README.

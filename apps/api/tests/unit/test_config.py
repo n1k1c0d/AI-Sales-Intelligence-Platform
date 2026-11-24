@@ -13,7 +13,7 @@ def test_safe_defaults_in_any_working_directory(
 ) -> None:
     (tmp_path / ".env").write_text("APP_ENV=production", encoding="utf-8")
     monkeypatch.chdir(tmp_path)
-    assert Settings().model_dump(mode="json") == {
+    assert Settings().model_dump(mode="json", include={"env", "log_level", "cors_origins"}) == {
         "env": "local",
         "log_level": "INFO",
         "cors_origins": [],
@@ -22,6 +22,14 @@ def test_safe_defaults_in_any_working_directory(
 
 def test_process_values(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("APP_ENV", "production")
+    for key, value in {
+        "HOST": "db",
+        "PORT": "5432",
+        "NAME": "test",
+        "USER": "test",
+        "PASSWORD": "test-only",
+    }.items():
+        monkeypatch.setenv("APP_DB_" + key, value)
     monkeypatch.setenv("APP_LOG_LEVEL", "WARNING")
     monkeypatch.setenv("APP_CORS_ORIGINS", '["https://EXAMPLE.org:443","http://[::1]:3000"]')
     settings = Settings()

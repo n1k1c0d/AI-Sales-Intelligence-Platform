@@ -9,6 +9,19 @@ services:
       APP_ENV: "${APP_ENV-local}"
       APP_LOG_LEVEL: "${APP_LOG_LEVEL-INFO}"
       APP_CORS_ORIGINS: "${APP_CORS_ORIGINS-[]}"
+      APP_DB_HOST: db
+      APP_DB_PORT: "5432"
+      APP_DB_NAME: ${POSTGRES_DB:-dealmind}
+      APP_DB_USER: ${POSTGRES_USER:-dealmind}
+      APP_DB_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      APP_DB_POOL_SIZE: "${APP_DB_POOL_SIZE-5}"
+      APP_DB_MAX_OVERFLOW: "${APP_DB_MAX_OVERFLOW-5}"
+      APP_DB_POOL_TIMEOUT: "${APP_DB_POOL_TIMEOUT-5}"
+      APP_DB_CONNECT_TIMEOUT: "${APP_DB_CONNECT_TIMEOUT-3}"
+      APP_DB_HEALTH_TIMEOUT: "${APP_DB_HEALTH_TIMEOUT-5}"
+    depends_on:
+      db:
+        condition: service_healthy
     ports:
       - "127.0.0.1:${API_HOST_PORT:-8000}:8000"
     networks: [dealmind-network]

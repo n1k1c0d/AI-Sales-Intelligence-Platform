@@ -1,6 +1,6 @@
 # DealMind · Локальное окружение Docker
 
-В DM-005 Compose запускает три Linux-контейнера. Для API используется существующий пакет DM-004. У API и n8n пока нет зависимости от готовности доменной БД, поэтому все три процесса могут стартовать параллельно. `docker compose up --wait` ждёт проверок каждого сервиса. [Подготовка .env и первый запуск](../../README.md#local-development-with-docker)
+В DM-005 Compose запускает три Linux-контейнера. Для API используется существующий пакет DM-004. С DM-007 Compose запускает API после успешного `pg_isready` сервиса db. n8n использует свою SQLite и стартует независимо. `docker compose up --wait` ждёт проверок каждого сервиса. [Подготовка .env и первый запуск](../../README.md#local-development-with-docker)
 
 | Сервис / образ | Из контейнера в общей сети | С хоста по умолчанию | Постоянные данные и проверка |
 | --- | --- | --- | --- |
@@ -14,7 +14,10 @@
 
 ```shell
 docker compose config --quiet
-docker compose up -d --build --wait
+docker compose up -d --wait db
+docker compose build api
+docker compose run --rm --no-deps api alembic upgrade head
+docker compose up -d --wait
 docker compose ps
 docker compose port api 8000
 docker compose port db 5432
@@ -60,7 +63,11 @@ docker compose exec -T n8n node -e "fetch('http://api:8000/api/v1/health').then(
 
 Сеть и тома имеют префикс имени проекта (`dealmind` по умолчанию). Хост-порты привязаны к loopback IPv4, Docker socket не монтируется. Для API один базовый Python 3.12.13 slim используется в обеих стадиях сборки, uv 0.11.0 остаётся в builder. Runtime запускается с UID 10001. Реестр, тег и digest внешних образов закреплены в Compose и Dockerfile. При обновлении сверяйте официальный тег, digest multi-arch manifest и наличие платформы машины, затем повторяйте проверки HTTP, SQL и сохранности данных. [Образы pgvector](https://github.com/pgvector/pgvector#docker) · [uv в Docker](https://docs.astral.sh/uv/guides/integration/docker/) · [Образы n8n](https://docs.n8n.io/hosting/installation/docker/)
 
-Окружение предназначено для локальной разработки. Подключение FastAPI к PostgreSQL и проверка БД в readiness запланированы в DM-007. Для публичного доступа потребуются отдельные решения по TLS, доступу и резервным копиям.
+Окружение предназначено для локальной разработки. API подключается к `db:5432` по Psycopg 3. Compose передаёт ему имя БД, роль и пароль из `POSTGRES_*`. Для клиента на хосте адрес по умолчанию `127.0.0.1:5433`. `/api/v1/ready` выполняет `SELECT 1`, а ревизию проверяет отдельная команда `docker compose run --rm --no-deps api alembic current`. Для публичного доступа потребуются отдельные решения по TLS, доступу и резервным копиям.
+
+## Отдельная PostgreSQL для тестов
+
+Из корня запустите `docker compose -p dealmind-db-test -f infra/docker/postgres/compose.test.yml up -d --wait`. У проекта отдельные сеть, том `dealmind-db-test_test_postgres_data` и хост-порт `127.0.0.1:55433`. Запуск `pytest -m database` проверяет Docker labels, порт, том и идентификатор кластера перед транзакциями, миграциями и временной остановкой тестового контейнера. Завершив работу, можно остановить тестовую БД командой `docker compose -p dealmind-db-test -f infra/docker/postgres/compose.test.yml stop`. [Команды и правила изоляции](../../apps/api/README.md#database-architecture)
 
 ## Устранение ошибок
 

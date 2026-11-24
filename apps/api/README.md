@@ -37,7 +37,7 @@ uv lock --check
 ## Локальный запуск
 
 ```shell
-uv run --locked uvicorn dealmind.main:app --reload --no-access-log --host 127.0.0.1 --port 8000
+uv run --locked uvicorn dealmind.main:app --reload --loop asyncio:SelectorEventLoop --no-access-log --host 127.0.0.1 --port 8000
 ```
 
 Оставьте процесс в терминале на время работы. Для остановки нажмите Ctrl+C. Если порт занят, укажите `--port 8001` и замените порт в адресах ниже. На 8001 проверены запуск с reload, реальные запросы curl и отображение Swagger UI.
@@ -45,8 +45,8 @@ uv run --locked uvicorn dealmind.main:app --reload --no-access-log --host 127.0.
 | Метод и путь | Код | Результат |
 | --- | --- | --- |
 | GET `/api/v1/health` | 200 | `{"status":"ok","service":"dealmind-api"}` |
-| GET `/api/v1/ready` | 200 | `{"status":"ready","checks":{"application":"ok"}}` после startup |
-| GET `/api/v1/ready` | 503 | `{"status":"not_ready","checks":{"application":"not_ready"}}` при неготовности |
+| GET `/api/v1/ready` | 200 | `{"status":"ready","checks":{"application":"ok","database":"ok"}}` после startup |
+| GET `/api/v1/ready` | 503 | `{"status":"not_ready","checks":{"application":"ok","database":"not_ready"}}` при неготовности |
 | GET `/openapi.json` | 200 | OpenAPI с моделями ответов, включая 503 для readiness |
 | GET `/docs` | 200 | Swagger UI с обоими маршрутами |
 
@@ -57,7 +57,7 @@ curl -i http://127.0.0.1:8000/api/v1/unknown
 curl -i http://127.0.0.1:8000/openapi.json
 ```
 
-Откройте `http://127.0.0.1:8000/docs` в браузере. Swagger UI использует стандартные браузерные ресурсы FastAPI с CDN. Liveness подтверждает способность HTTP-процесса ответить. Readiness читает только состояние текущего экземпляра приложения. Проверка обязательной БД запланирована в DM-007.
+Откройте `http://127.0.0.1:8000/docs` в браузере. Swagger UI использует стандартные браузерные ресурсы FastAPI с CDN. Liveness подтверждает способность HTTP-процесса ответить. Readiness проверяет состояние приложения и выполняет `SELECT 1` в PostgreSQL.
 
 ## Контракт ошибок
 
@@ -108,7 +108,7 @@ Hatchling собирает source distribution (`.tar.gz`) и wheel (`.whl`) в 
 
 Из корня monorepo подготовьте локальный `.env` по шаблону. `docker compose build api` собирает Python 3.12.13 и runtime-зависимости из `uv.lock`. Сначала uv устанавливает зависимости, затем копируется исходный код и устанавливается пакет в обычном режиме. В финальный слой попадает только собранное окружение. Сервис запускает `dealmind.main:app` через Uvicorn от пользователя `dealmind` (UID 10001). Параметр `--reload` применяется при локальной разработке на хосте.
 
-Команда `docker compose up -d --build --wait` запускает всё окружение. Docker проверяет `/api/v1/health` изнутри контейнера через стандартную библиотеку Python. `/api/v1/ready` по-прежнему проверяет lifespan приложения. PostgreSQL и n8n имеют собственные проверки. `API_HOST_PORT` выбирает порт хоста, внутри сети API всегда слушает `api:8000`. Пароль PostgreSQL и ключ n8n передаются только своим сервисам. [Инфраструктурный runbook](../../infra/docker/README.md)
+Команда `docker compose up -d --build --wait` запускает всё окружение. Docker проверяет `/api/v1/health` изнутри контейнера через стандартную библиотеку Python. `/api/v1/ready` проверяет lifespan и доступность БД. PostgreSQL и n8n имеют собственные проверки. `API_HOST_PORT` выбирает порт хоста, внутри сети API всегда слушает `api:8000`. Пароль PostgreSQL передаётся в db и api, ключ n8n — в n8n. [Инфраструктурный runbook](../../infra/docker/README.md)
 
 ## Configuration & Logging
 
@@ -118,7 +118,7 @@ Hatchling собирает source distribution (`.tar.gz`) и wheel (`.whl`) в 
 | `APP_LOG_LEVEL` | `INFO` | `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL` |
 | `APP_CORS_ORIGINS` | `[]` | JSON-массив HTTP(S) origins, например `["http://localhost:3000"]` |
 
-Фабрика создаёт один неизменяемый `Settings` для приложения. Для тестов можно передать `create_app(settings=Settings(env="test"))`. В маршруте зависимость `Depends(get_settings)` возвращает тот же объект. Pydantic Settings читает переменные процесса. Поиск dotenv-файлов выключен. В режиме `production` действуют те же правила валидации. [Pydantic Settings](https://docs.pydantic.dev/latest/concepts/pydantic_settings/)
+Фабрика создаёт один неизменяемый `Settings` для приложения. Для тестов можно передать `create_app(settings=Settings(env="test"))`. В маршруте зависимость `Depends(get_settings)` возвращает тот же объект. Pydantic Settings читает переменные процесса. Поиск dotenv-файлов выключен. В режиме `production` обязательно явно настроить подключение к БД. [Pydantic Settings](https://docs.pydantic.dev/latest/concepts/pydantic_settings/)
 
 В PowerShell из `apps/api` можно запустить API с локальными переопределениями. В Bash те же значения задаются через `export`.
 
@@ -126,10 +126,10 @@ Hatchling собирает source distribution (`.tar.gz`) и wheel (`.whl`) в 
 $env:APP_ENV = 'local'
 $env:APP_LOG_LEVEL = 'DEBUG'
 $env:APP_CORS_ORIGINS = '["http://localhost:3000"]'
-uv run --locked uvicorn dealmind.main:app --reload --no-access-log
+uv run --locked uvicorn dealmind.main:app --reload --loop asyncio:SelectorEventLoop --no-access-log
 ```
 
-При запуске через Docker Compose корневой `.env` используется для подстановки. Секция `api.environment` передаёт в контейнер три `APP_*`. После изменения значений выполните из корня `docker compose up -d --build --wait api`. Обычный `restart` использует прежнее окружение контейнера. При ошибке запуска проверьте написание режима, регистр уровня и синтаксис JSON. Пустое значение известной переменной вызывает ошибку. Для пустого списка origins используйте `[]`.
+При запуске через Docker Compose корневой `.env` используется для подстановки. Секция `api.environment` передаёт в контейнер настройки приложения и подключения к БД. После изменения значений выполните из корня `docker compose up -d --build --wait api`. Обычный `restart` использует прежнее окружение контейнера. При ошибке запуска проверьте написание режима, регистр уровня и синтаксис JSON. Пустое значение известной переменной вызывает ошибку. Для пустого списка origins используйте `[]`.
 
 **Корреляция.** Каждый ответ содержит `X-Request-ID`. Можно передать свой UUID v4. Приложение канонизирует корректный UUID и создаёт новый при отсутствующем, неоднозначном или некорректном заголовке. После запроса найдите возвращённое значение в `docker compose logs --no-log-prefix api`. При локальном запуске идентификатор виден в терминале.
 
@@ -139,6 +139,64 @@ uv run --locked uvicorn dealmind.main:app --reload --no-access-log
 
 Для проверки конфигурации, ошибок, параллельных запросов и CORS выполните `uv run --locked pytest -v` из `apps/api`. [Результаты приёмки DM-006](../../docs/tasks/DM-006.md)
 
+## Database Architecture
+
+`dealmind.db` содержит общий Declarative Base, построитель URL, AsyncEngine, фабрику AsyncSession и SQL-проверку готовности. ORM-модели добавляются по мере реализации предметной области. [Архитектурное решение](../../docs/adr/0002-async-database-access.md)
+
+### Настройки и адреса
+
+| Переменная | Default на хосте | Значение и ограничения |
+| --- | --- | --- |
+| APP_DB_HOST | 127.0.0.1 | В Compose — имя сервиса `db` |
+| APP_DB_PORT | 5433 | 1…65535. В контейнере — 5432 |
+| APP_DB_NAME, APP_DB_USER | dealmind | Непустые имя БД и роль |
+| APP_DB_PASSWORD | отсутствует | Непустой секрет, в Compose берётся из POSTGRES_PASSWORD |
+| APP_DB_POOL_SIZE | 5 | Базовый размер пула, больше нуля |
+| APP_DB_MAX_OVERFLOW | 5 | Дополнительные соединения, от нуля |
+| APP_DB_POOL_TIMEOUT | 5 с | Предел ожидания свободного соединения |
+| APP_DB_CONNECT_TIMEOUT | 3 с | Положительное целое число секунд для Psycopg |
+| APP_DB_HEALTH_TIMEOUT | 5 с | Общий положительный предел проверки readiness |
+
+Для локального Uvicorn передайте в окружение действующий пароль роли. Например, в PowerShell используйте `$env:APP_DB_PASSWORD = Read-Host -MaskInput 'PostgreSQL password'`. Если параметры публикации отличаются от шаблона, укажите в процессе API имя БД, роль и фактический хост-порт. Для production явно задайте все пять параметров подключения. URL собирается через `URL.create()` из отдельных полей. Символы `@`, `%`, двоеточие и слеш в пароле передаются драйверу без ручного кодирования. [Диалект PostgreSQL](https://docs.sqlalchemy.org/en/20/dialects/postgresql.html)
+
+### Асинхронный engine, сессии и транзакции
+
+Lifespan владеет пулом с `pool_pre_ping=True`. Создание engine не открывает соединение. Shutdown вызывает `await engine.dispose()`. На Windows для локального Uvicorn используйте `--loop asyncio:SelectorEventLoop`, как в команде запуска выше. Alembic и database-тесты выбирают совместимый цикл событий самостоятельно. [Psycopg и asyncio](https://www.psycopg.org/psycopg3/docs/advanced/async.html)
+
+Зависимость `get_db_session` выдаёт отдельную `AsyncSession` на операцию. Параллельным задачам нужны отдельные сессии. Application service выполняет `async with session.begin():` или явный `commit()`. При исключении транзакционный контекст откатывает работу. Закрытие сессии откатывает оставшиеся незавершённые изменения и возвращает соединение в пул. У фабрики `autoflush=False` и `expire_on_commit=False`. Если нужен результат ещё не зафиксированной записи, вызовите `await session.flush()`.
+
+### Миграции Alembic
+
+Из корня репозитория запустите PostgreSQL, соберите образ и примените схему отдельной командой.
+
+```shell
+docker compose up -d --wait db
+docker compose build api
+docker compose run --rm --no-deps api alembic upgrade head
+docker compose run --rm --no-deps api alembic current
+docker compose up -d --wait
+```
+
+Из `apps/api` доступны `uv run --locked alembic heads`, `history`, `upgrade head --sql`. Для online-команд `upgrade head`, `current` и `check` задайте настройки подключения. Ревизия `0001` включает расширение vector и фиксирует версию в alembic_version. Повторный upgrade допустим. При тестовом downgrade до base расширение сохраняется, поскольку могло существовать до миграции. Для локального контейнера используется роль владельца. Внешняя БД может потребовать предварительного включения расширения администратором.
+
+### Readiness и диагностика
+
+`GET /api/v1/ready` возвращает 200 при готовом lifecycle и результате 1 от PostgreSQL. При недоступности БД возвращается 503 с `application=ok` и `database=not_ready`. До startup обе проверки имеют значение `not_ready`. В local/test без пароля процесс отвечает на liveness и сообщает 503 на readiness. Ошибка подключения при работе через session dependency имеет код `DATABASE_UNAVAILABLE` и заголовок `X-Request-ID`.
+
+Если проверка не проходит, сверьте адрес подключения, опубликованный порт, роль, фактический пароль и доступность пула. В логах API событие `database.healthcheck.failed` содержит тип ошибки и длительность. Во время непрерывного сбоя предупреждение ограничено одним на 30 секунд на экземпляр. Следующая успешная проверка сбрасывает ограничение. Состояние миграций смотрите через `alembic current`.
+
+### Два набора тестов
+
+Из `apps/api` выполните `uv run --locked pytest -m "not database" -v` для автономных тестов. Обычный вызов pytest выбирает этот же набор. Для настоящей PostgreSQL из корня проекта выполните
+
+```shell
+docker compose -p dealmind-db-test -f infra/docker/postgres/compose.test.yml up -d --wait
+cd apps/api
+uv run --locked pytest -m database -v
+```
+
+Compose публикует тестовую БД `dealmind_test` на `127.0.0.1:55433` с одноимённой ролью, отдельным томом и демонстрационным паролем из тестового YAML. `DEALMIND_TEST_DB_PORT` и `DEALMIND_TEST_DB_PASSWORD` можно задать до первого запуска и передать обоим процессам. Перед изменениями fixture подтверждает фактический контейнер, проект, том, порт, имя БД и идентификатор кластера. Для проверки baseline создаётся новая временная БД внутри этого кластера. Тест восстановления останавливает и запускает только выделенный контейнер. При недоступном проекте явный запуск набора завершается ошибкой.
+
 ## Дальнейшая разработка
 
-Подключение backend к БД относится к DM-007. Доменные модули CRM, аналитика и AI-сценарии запланированы на последующие этапы. [Архитектура](../../docs/ARCHITECTURE.md) · [Roadmap](../../docs/ROADMAP.md)
+Доменные модули CRM, аналитика и AI-сценарии запланированы на последующие этапы. [Архитектура](../../docs/ARCHITECTURE.md) · [Roadmap](../../docs/ROADMAP.md)

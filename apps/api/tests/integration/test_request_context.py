@@ -9,6 +9,7 @@ import pytest
 from fastapi import Depends
 from fastapi.responses import StreamingResponse
 from fastapi.testclient import TestClient
+from pydantic import SecretStr
 
 from dealmind.api.dependencies import get_settings
 from dealmind.core.config import Settings
@@ -40,6 +41,7 @@ def test_errors_and_completion_are_correlated_and_safe(capsys: pytest.CaptureFix
         raise RuntimeError("private-exception")
 
     with TestClient(app, raise_server_exceptions=False) as client:
+        capsys.readouterr()  # Discard the separately tested database startup event.
         for method, path, status, route in [
             ("GET", "/api/v1/health", 200, "/api/v1/health"),
             ("GET", "/missing/private-email", 404, "<unmatched>"),
@@ -124,7 +126,18 @@ def test_concurrent_requests_isolate_context_and_stream(capsys: pytest.CaptureFi
 
 
 def test_settings_dependency_and_logger_belong_to_app(capsys: pytest.CaptureFixture[str]) -> None:
-    settings = [Settings(env="test"), Settings(env="production", log_level="ERROR")]
+    settings = [
+        Settings(env="test"),
+        Settings(
+            env="production",
+            log_level="ERROR",
+            db_host="localhost",
+            db_port=5432,
+            db_name="test",
+            db_user="test",
+            db_password=SecretStr("test-only"),
+        ),
+    ]
     apps = [create_app(config) for config in settings]
     for app in apps:
 
@@ -136,7 +149,11 @@ def test_settings_dependency_and_logger_belong_to_app(capsys: pytest.CaptureFixt
         assert app.state.settings is config
         with TestClient(app) as client:
             assert client.get("/env").json() == config.env
-    (event,) = map(json.loads, capsys.readouterr().err.splitlines())
+    (event,) = (
+        record
+        for record in map(json.loads, capsys.readouterr().err.splitlines())
+        if record["event"] == "http.request.completed"
+    )
     assert event["environment"] == "test"
 
 

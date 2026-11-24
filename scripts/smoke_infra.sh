@@ -14,7 +14,7 @@ check_json() {
 }
 
 http_get "$api/api/v1/health" | check_json "assert data == {'status': 'ok', 'service': 'dealmind-api'}"
-http_get "$api/api/v1/ready" | check_json "assert data == {'status': 'ready', 'checks': {'application': 'ok'}}"
+http_get "$api/api/v1/ready" | check_json "assert data == {'status': 'ready', 'checks': {'application': 'ok', 'database': 'ok'}}"
 http_get "$api/openapi.json" | check_json "assert {'/api/v1/health', '/api/v1/ready'} <= data['paths'].keys()"
 swagger_html=$(http_get "$api/docs")
 [[ $swagger_html == *SwaggerUIBundle* ]]

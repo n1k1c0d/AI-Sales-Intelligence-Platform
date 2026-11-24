@@ -8,3 +8,10 @@
 !src/**/
 !src/**/*.py
 !src/**/py.typed
+!alembic.ini
+!alembic/
+!alembic/README
+!alembic/env.py
+!alembic/script.py.mako
+!alembic/versions/
+!alembic/versions/*.py

@@ -13,6 +13,9 @@ def test_openapi_contract(client: TestClient) -> None:
     assert schema["info"]["description"]
     assert set(schema["paths"]) == {"/api/v1/health", "/api/v1/ready"}
 
+    checks = schema["components"]["schemas"]["ReadinessChecks"]
+    assert set(checks["required"]) == {"application", "database"}
+
     for path, model in [
         ("/api/v1/health", "HealthResponse"),
         ("/api/v1/ready", "ReadinessResponse"),

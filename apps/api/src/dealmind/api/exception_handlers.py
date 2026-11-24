@@ -6,6 +6,7 @@ from fastapi.responses import JSONResponse
 from fastapi.routing import APIRoute
 from starlette.exceptions import HTTPException
 
+from dealmind.db.engine import DatabaseUnavailable
 from dealmind.schemas.errors import ErrorDetail, ErrorResponse, ValidationIssue
 
 _HTTP_ERRORS = {
@@ -51,6 +52,13 @@ def _public_location(request: Request, location: tuple[str | int, ...]) -> list[
 
 
 def register_exception_handlers(app: FastAPI) -> None:
+    @app.exception_handler(DatabaseUnavailable)
+    async def database_unavailable(request: Request, exc: DatabaseUnavailable) -> JSONResponse:
+        body = ErrorResponse(
+            error=ErrorDetail(code="DATABASE_UNAVAILABLE", message="Database unavailable")
+        )
+        return JSONResponse(body.model_dump(mode="json"), status_code=503)
+
     @app.exception_handler(HTTPException)
     async def http_error(request: Request, exc: HTTPException) -> JSONResponse:
         return _error_response(exc.status_code, headers=exc.headers)

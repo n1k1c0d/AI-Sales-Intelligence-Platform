@@ -8,6 +8,11 @@ class HealthResponse(BaseModel):
     service: str
 
 
+class ReadinessChecks(BaseModel):
+    application: Literal["ok", "not_ready"]
+    database: Literal["ok", "not_ready"]
+
+
 class ReadinessResponse(BaseModel):
     status: Literal["ready", "not_ready"]
-    checks: dict[str, Literal["ok", "not_ready"]]
+    checks: ReadinessChecks

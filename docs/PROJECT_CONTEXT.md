@@ -75,7 +75,9 @@ DM-003 подготовила устанавливаемый пакет `dealmin
 
 В DM-006 каждый экземпляр API получает собственные Pydantic Settings, CORS и JSON-логгер. `APP_ENV`, `APP_LOG_LEVEL` и `APP_CORS_ORIGINS` управляют настройками процесса. Middleware связывает ответы и HTTP-логи по `X-Request-ID` через ContextVar, измеряет длительность и безопасно регистрирует ошибки. Настройки, логи, конкурентные запросы и CORS покрыты тестами. Распределённая трассировка, сбор логов во внешнем сервисе, постоянный audit log, AI tracing и CRM-интеграции остаются в плане. [Приёмка DM-006](tasks/DM-006.md)
 
-Подключение SQLAlchemy, Alembic и проверка БД через readiness относятся к DM-007. CRM-модели и аналитика, workflows n8n, frontend, RAG и AI Deal Analyst остаются в плане. [Порядок задач](ROADMAP.md)
+DM-007 добавила PostgreSQL-backed readiness, AsyncEngine SQLAlchemy с пулом, драйвер Psycopg 3, фабрику AsyncSession и зависимость FastAPI. Настройки БД входят в Settings. Транзакцией управляет вызывающий сервис. Общий Declarative Base задаёт имена ограничений. Alembic baseline `0001` включает pgvector. Транзакции, миграции, таймаут пула и восстановление после остановки БД проверяются на отдельной PostgreSQL. [Решение по доступу к данным](adr/0002-async-database-access.md)
+
+Прикладные таблицы, репозитории и CRM API запланированы на следующие этапы. CRM-модели и аналитика, workflows n8n, frontend, RAG и AI Deal Analyst остаются в плане. [Порядок задач](ROADMAP.md)
 
 ## Ограничения и открытые вопросы
 
