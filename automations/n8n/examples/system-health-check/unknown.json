@@ -1,0 +1,37 @@
+{
+  "schema_version": "1.0",
+  "workflow": "system-health-check",
+  "workflow_version": "1.0.0",
+  "execution_id": "6",
+  "started_at": "2026-11-24T18:03:10.006Z",
+  "finished_at": "2026-11-24T18:03:10.149Z",
+  "duration_ms": 143,
+  "overall_status": "unknown",
+  "services": {
+    "backend": {
+      "status": "unknown",
+      "http_status": 200,
+      "request_id": null
+    },
+    "readiness": {
+      "status": "unknown",
+      "http_status": 200,
+      "request_id": null
+    },
+    "database": {
+      "status": "unknown"
+    }
+  },
+  "errors": [
+    {
+      "code": "INVALID_RESPONSE",
+      "message": "Response did not match the API contract",
+      "source": "health"
+    },
+    {
+      "code": "INVALID_RESPONSE",
+      "message": "Response did not match the API contract",
+      "source": "readiness"
+    }
+  ]
+}

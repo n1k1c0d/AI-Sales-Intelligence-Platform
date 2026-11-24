@@ -1,0 +1,32 @@
+{
+  "schema_version": "1.0",
+  "workflow": "system-health-check",
+  "workflow_version": "1.0.0",
+  "execution_id": "2",
+  "started_at": "2026-11-24T18:00:59.712Z",
+  "finished_at": "2026-11-24T18:01:03.817Z",
+  "duration_ms": 4105,
+  "overall_status": "degraded",
+  "services": {
+    "backend": {
+      "status": "operational",
+      "http_status": 200,
+      "request_id": "16bbfef2-4cb0-4a9e-a9e3-22d47961e514"
+    },
+    "readiness": {
+      "status": "degraded",
+      "http_status": 503,
+      "request_id": "850dadab-cfee-4bcc-8349-00db2dc8a6fd"
+    },
+    "database": {
+      "status": "not_ready"
+    }
+  },
+  "errors": [
+    {
+      "code": "DATABASE_NOT_READY",
+      "message": "Database readiness check failed",
+      "source": "readiness"
+    }
+  ]
+}
