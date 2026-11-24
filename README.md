@@ -10,8 +10,8 @@ DealMind проектируется для отдела продаж онлай�
 
 | Статус | Что доступно или запланировано |
 | --- | --- |
-| Implemented | Docker Compose запускает FastAPI, PostgreSQL 17 с pgvector и n8n. Доступны Swagger UI, liveness и readiness с проверкой PostgreSQL, единый JSON-контракт ошибок, настройки APP_*, CORS, X-Request-ID, структурированные логи, тесты API и инфраструктурный smoke-тест. |
-| In Progress | Идёт PHASE 0. Следующий этап по roadmap — каркас Next.js. |
+| Implemented | Docker Compose запускает Next.js, FastAPI, PostgreSQL 17 с pgvector и n8n. На странице System Overview видны состояние API и БД, время проверки и Request ID. Доступны Swagger UI, liveness и readiness с проверкой PostgreSQL, единый JSON-контракт ошибок, настройки APP_*, CORS, X-Request-ID, структурированные логи, тесты API и инфраструктурный smoke-тест. |
+| In Progress | Идёт PHASE 0. Следующий этап по roadmap — проверочный workflow n8n. |
 | Planned | API для синтетических CRM-данных, аналитика, Risk Engine, поиск по базе знаний с цитатами, AI Deal Analyst, интерфейс согласования и автоматизации через n8n. |
 
 ## Технологический стек
@@ -42,11 +42,11 @@ FastAPI Backend объединит доменные модули в одном �
 ├── .editorconfig
 ├── .gitignore
 ├── .env.example         # Шаблон локальных настроек Compose
-├── docker-compose.yml   # API, PostgreSQL с pgvector и n8n
+├── docker-compose.yml   # Web, API, PostgreSQL с pgvector и n8n
 ├── .github/workflows/   # Зарезервировано для CI
 ├── apps/
 │   ├── api/             # Python-пакет, uv.lock и smoke-тесты
-│   └── web/             # Next.js Frontend
+│   └── web/             # Next.js App Router, System Overview и Vitest
 ├── automations/n8n/     # Экспорты workflows и примеры интеграций
 ├── data/demo/           # Синтетические данные
 ├── docs/                # Спецификация, контекст, архитектура и roadmap
@@ -71,9 +71,21 @@ uv run --locked uvicorn dealmind.main:app --reload --loop asyncio:SelectorEventL
 
 Настройки процесса задают режим приложения, порог логирования и разрешённые origins. По заголовку `X-Request-ID` ответа можно найти событие в JSON-логах API. [Настройки и диагностика](apps/api/README.md#configuration--logging)
 
+Для локальной разработки интерфейса потребуются Node.js 24 LTS и npm 11. Из корня выполните
+
+```shell
+cd apps/web
+npm ci
+npm run dev
+```
+
+Откройте `http://127.0.0.1:3000`. Если API опубликован на другом порту, задайте его origin в `apps/web/.env.local`. [Руководство frontend](apps/web/README.md)
+
+![System Overview с результатами проверок работающего FastAPI и PostgreSQL](docs/assets/system-overview.png)
+
 ## Local Development with Docker
 
-Из корня репозитория можно поднять API, PostgreSQL 17 с pgvector и n8n. Нужны запущенный Docker Engine с поддержкой Linux-контейнеров и команда `docker compose` (Compose V2 или совместимая новая версия). На Windows это обеспечивает [Docker Desktop](https://docs.docker.com/desktop/setup/install/windows-install/).
+Из корня репозитория можно поднять web, API, PostgreSQL 17 с pgvector и n8n. Нужны запущенный Docker Engine с поддержкой Linux-контейнеров и команда `docker compose` (Compose V2 или совместимая новая версия). На Windows это обеспечивает [Docker Desktop](https://docs.docker.com/desktop/setup/install/windows-install/).
 
 1. При первой настройке скопируйте `.env.example` в `.env`. В PowerShell используйте `Copy-Item .env.example .env`, в Bash — `cp .env.example .env`. Если файл уже существует, сохраните его значения.
 2. Заполните `POSTGRES_PASSWORD` и `N8N_ENCRYPTION_KEY` двумя независимыми случайными значениями. Для каждого можно выполнить `python -c "import secrets; print(secrets.token_hex(32))"`. Храните ключ n8n вместе с резервной копией данных. Реальный `.env` исключён из Git.
@@ -82,13 +94,13 @@ uv run --locked uvicorn dealmind.main:app --reload --loop asyncio:SelectorEventL
 ```shell
 docker compose config --quiet
 docker compose up -d --wait db
-docker compose build api
+docker compose build api web
 docker compose run --rm --no-deps api alembic upgrade head
 docker compose up -d --wait
 docker compose ps
 ```
 
-При портах из шаблона Swagger UI доступен по `http://127.0.0.1:8000/docs`, OpenAPI — по `/openapi.json` на том же сервере. PostgreSQL слушает `127.0.0.1:5433`, редактор n8n — `http://127.0.0.1:5678`. При первом входе в n8n создайте локальную учётную запись владельца. Фактические порты можно посмотреть через `docker compose ps`.
+При портах из шаблона System Overview доступен по `http://127.0.0.1:3000`, web liveness — по `/api/health`, диагностика — по `/api/system/status` на том же сервере. Swagger UI доступен по `http://127.0.0.1:8000/docs`, OpenAPI — по `/openapi.json` на том же сервере. PostgreSQL слушает `127.0.0.1:5433`, редактор n8n — `http://127.0.0.1:5678`. При первом входе в n8n создайте локальную учётную запись владельца. Фактические порты можно посмотреть через `docker compose ps`.
 
 Для диагностики используйте `docker compose logs --tail 50 api` или подставьте имя другого сервиса. Команда `docker compose down` останавливает окружение и сохраняет данные. **Флаг `-v` удаляет тома PostgreSQL и n8n.** Если запуск завершается ошибкой, проверьте доступность Engine, занятость портов и заполнение `.env`. [SQL-проверки, сеть, тома и устранение ошибок](infra/docker/README.md)
 
@@ -108,6 +120,7 @@ docker compose ps
 - Локальное Docker-окружение и проверка сохранности данных — [DM-005](docs/tasks/DM-005.md).
 - Настройки, корреляция запросов и проверка CORS — [DM-006](docs/tasks/DM-006.md).
 - Асинхронные сессии, миграции и изолированные PostgreSQL-тесты — [руководство backend](apps/api/README.md#database-architecture) и [приёмка DM-007](docs/tasks/DM-007.md).
+- Снимки экрана, сценарии отказа и результаты проверки frontend — [DM-008](docs/tasks/DM-008.md).
 - Полный исходный замысел и правила разработки — [Master Specification v1.0](docs/MASTER_SPEC.md).
 
 ## Ограничения

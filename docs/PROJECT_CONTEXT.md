@@ -77,7 +77,9 @@ DM-003 подготовила устанавливаемый пакет `dealmin
 
 DM-007 добавила PostgreSQL-backed readiness, AsyncEngine SQLAlchemy с пулом, драйвер Psycopg 3, фабрику AsyncSession и зависимость FastAPI. Настройки БД входят в Settings. Транзакцией управляет вызывающий сервис. Общий Declarative Base задаёт имена ограничений. Alembic baseline `0001` включает pgvector. Транзакции, миграции, таймаут пула и восстановление после остановки БД проверяются на отдельной PostgreSQL. [Решение по доступу к данным](adr/0002-async-database-access.md)
 
-Прикладные таблицы, репозитории и CRM API запланированы на следующие этапы. CRM-модели и аналитика, workflows n8n, frontend, RAG и AI Deal Analyst остаются в плане. [Порядок задач](ROADMAP.md)
+В DM-008 реализованы Next.js App Router, React, TypeScript и Tailwind CSS. Root Layout и System Overview показывают реальные liveness и readiness, состояние PostgreSQL, время проверки и Request IDs. Серверный типизированный HTTP-клиент проверяет ответы через Zod. Интерфейс обрабатывает загрузку, деградацию, недоступность и ручное обновление. Контракты и компоненты покрыты тестами. В Docker Compose добавлен самостоятельный сервис web. [Приёмка DM-008](tasks/DM-008.md)
+
+Прикладные таблицы, репозитории и CRM API запланированы на следующие этапы. В плане остаются CRM Dashboard, таблица сделок, аналитика продаж, визуализация риска, RAG-интерфейс, AI-рекомендации, аутентификация, production deployment и бизнес-процессы n8n. [Порядок задач](ROADMAP.md)
 
 ## Ограничения и открытые вопросы
 

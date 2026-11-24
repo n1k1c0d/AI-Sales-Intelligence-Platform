@@ -1,9 +1,10 @@
 # DealMind · Локальное окружение Docker
 
-В DM-005 Compose запускает три Linux-контейнера. Для API используется существующий пакет DM-004. С DM-007 Compose запускает API после успешного `pg_isready` сервиса db. n8n использует свою SQLite и стартует независимо. `docker compose up --wait` ждёт проверок каждого сервиса. [Подготовка .env и первый запуск](../../README.md#local-development-with-docker)
+С DM-008 Compose запускает четыре Linux-контейнера. Web стартует независимо и читает диагностику FastAPI через общую сеть. Для API используется существующий пакет DM-004. С DM-007 Compose запускает API после успешного `pg_isready` сервиса db. n8n использует свою SQLite и стартует независимо. `docker compose up --wait` ждёт проверок каждого сервиса. [Подготовка .env и первый запуск](../../README.md#local-development-with-docker)
 
 | Сервис / образ | Из контейнера в общей сети | С хоста по умолчанию | Постоянные данные и проверка |
 | --- | --- | --- | --- |
+| `web` · локальный `dealmind-web:0.1.0` | `http://web:3000` | `http://127.0.0.1:3000` | Standalone без тома. Node.js проверяет собственный `/api/health`. |
 | `api` · локальный `dealmind-api:0.1.0` | `http://api:8000` | `http://127.0.0.1:8000/docs` | Контейнер без состояния. Health check делает HTTP GET через Python. |
 | `db` · `pgvector/pgvector:0.8.7-pg17-trixie` | `db:5432` | `127.0.0.1:5433` | `postgres_data` в `/var/lib/postgresql/data`. Готовность проверяет `pg_isready` по TCP. |
 | `n8n` · `n8nio/n8n:2.48.8` | `http://n8n:5678` | `http://127.0.0.1:5678` | `n8n_data` в `/home/node/.n8n`. Встроенный Node.js проверяет HTTP `/healthz/readiness`. |
@@ -15,10 +16,11 @@
 ```shell
 docker compose config --quiet
 docker compose up -d --wait db
-docker compose build api
+docker compose build api web
 docker compose run --rm --no-deps api alembic upgrade head
 docker compose up -d --wait
 docker compose ps
+docker compose port web 3000
 docker compose port api 8000
 docker compose port db 5432
 docker compose port n8n 5678

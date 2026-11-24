@@ -160,18 +160,21 @@ Docker Compose читает корневой `.env` и явно передаёт
 
 ## 14. Развёртывание
 
-С DM-005 локальное окружение состоит из трёх сервисов Docker Compose. На схеме указаны порты хоста по умолчанию. Их можно изменить в корневом `.env`. Внутри bridge-сети адреса определяет DNS Compose.
+С DM-008 локальное окружение состоит из четырёх сервисов Docker Compose. На схеме указаны порты хоста по умолчанию. Их можно изменить в корневом `.env`. Внутри bridge-сети адреса определяет DNS Compose.
 
 ```mermaid
 flowchart LR
     host["Хост · 127.0.0.1"]
     subgraph network["dealmind-network · bridge"]
+        web["web:3000 · Next.js standalone"]
+        web -->|"health + readiness"| api
         api["api:8000 · FastAPI"]
         db["db:5432 · PostgreSQL 17 + pgvector"]
         n8n["n8n:5678 · редактор и runtime"]
         n8n -->|"HTTP GET /api/v1/health"| api
         api -->|"Psycopg 3, TCP 5432"| db
     end
+    host -->|"3000"| web
     host -->|"8000"| api
     host -->|"5433"| db
     host -->|"5678"| n8n
@@ -179,9 +182,26 @@ flowchart LR
     n8n --> local[("n8n_data · SQLite и настройки")]
 ```
 
-API запускает ASGI-приложение DM-004 без состояния и принимает запросы сразу после своего startup. Readiness проверяет lifecycle и PostgreSQL. Compose ожидает успешного `pg_isready` перед запуском API. n8n хранит настройки в собственной SQLite. Параметр `--wait` при запуске Compose позволяет дождаться всех трёх health checks.
+API запускает ASGI-приложение DM-004 без состояния и принимает запросы сразу после своего startup. Readiness проверяет lifecycle и PostgreSQL. Compose ожидает успешного `pg_isready` перед запуском API. n8n хранит настройки в собственной SQLite. Параметр `--wait` при запуске Compose позволяет дождаться всех четырёх health checks.
 
-Compose передаёт пароль PostgreSQL в БД и API, ключ шифрования n8n — только в n8n. Именованные тома переживают пересоздание контейнеров командой `docker compose down` с последующим `up`. Для восстановления n8n нужны и том, и исходный ключ. Публикация сервисов ограничена loopback хоста. Публичный deployment потребует TLS, управления доступом и резервного копирования. Next.js запланирован в DM-008. [Руководство по локальному окружению](../infra/docker/README.md)
+Compose передаёт пароль PostgreSQL в БД и API, ключ шифрования n8n — только в n8n. Именованные тома переживают пересоздание контейнеров командой `docker compose down` с последующим `up`. Для восстановления n8n нужны и том, и исходный ключ. Публикация сервисов ограничена loopback хоста. Публичный deployment потребует TLS, управления доступом и резервного копирования. Web запускается независимо от API и БД. [Руководство по локальному окружению](../infra/docker/README.md)
+
+### Frontend Architecture
+
+```mermaid
+flowchart LR
+    Browser --> Web[Next.js Web]
+    Web --> Status[System Status Handler]
+    Status --> API[FastAPI]
+    API --> DB[(PostgreSQL)]
+    N8N[n8n] -. DM-009 · план .-> API
+```
+
+App Router рендерит Layout, заголовок и сведения о проекте как Server Components. Клиентская панель запрашивает `GET /api/system/status` с того же origin при открытии и ручном обновлении. Динамический Route Handler читает серверные настройки для каждого запроса. Клиент параллельно опрашивает два фиксированных маршрута FastAPI, валидирует HTTP и JSON, сохраняет отдельные Request IDs и измеренные длительности. Next.js возвращает компактный снимок с временем UTC и отключённым кэшированием.
+
+При health 200 и ready 200 подтверждается Operational. Валидный ready 503 оставляет API доступным, при отказе БД общий статус Degraded. Без подтверждённого состояния приложения БД получает Unknown. Две ошибки соединения дают Backend unavailable. Частичный результат сохраняет сведения успешной проверки. Подробная матрица и категории ошибок приведены в [руководстве web](../apps/web/README.md#10-system-status-contract).
+
+На хосте клиент использует опубликованный origin FastAPI, в Docker — `http://api:8000`. Браузер получает только публичную диагностическую структуру. `GET /api/health` проверяет сам Next.js независимо от downstream. SQL, бизнес-правила и проверка БД принадлежат Python. Возможность сети n8n → API подтверждена командой smoke, рабочий процесс относится к DM-009. [ADR-0003](adr/0003-frontend-api-integration.md)
 
 ### Слой доступа к PostgreSQL
 

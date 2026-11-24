@@ -1,6 +1,24 @@
 name: dealmind
 
 services:
+  web:
+    image: dealmind-web:0.1.0
+    build: ./apps/web
+    pull_policy: never
+    environment:
+      API_BASE_URL: http://api:8000
+      API_REQUEST_TIMEOUT_MS: "${API_REQUEST_TIMEOUT_MS-8000}"
+    ports:
+      - "127.0.0.1:${WEB_HOST_PORT:-3000}:3000"
+    networks: [dealmind-network]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/health').then(r => process.exit(r.status === 200 ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
   api:
     image: dealmind-api:0.1.0
     build: ./apps/api
