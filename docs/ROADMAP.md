@@ -6,7 +6,7 @@ Roadmap описывает путь от каркаса репозитория �
 
 **Приоритеты.** P0 — необходим для фундамента или целостности данных и операций, P1 — основной результат этапа, P2 — оформление или расширение. Номер задачи сохраняется при уточнении приоритета или зависимостей.
 
-**Текущая позиция.** PHASE 0. DM-001…DM-009 — DONE. DM-010 — IN_PROGRESS, остальные — BACKLOG. [Контекст проекта](PROJECT_CONTEXT.md)
+**Текущая позиция.** PHASE 0. DM-001…DM-011 — DONE. DM-012 — READY, остальные — BACKLOG. [Контекст проекта](PROJECT_CONTEXT.md)
 
 ## PHASE 0 — Project Foundation
 
@@ -23,9 +23,9 @@ Roadmap описывает путь от каркаса репозитория �
 | DM-007 | SQLAlchemy & Alembic Setup | Подключены ORM, миграции и реальная проверка готовности БД | P0 | DONE | DM-005, DM-006 | Проверены baseline на чистой БД, pgvector, транзакции и восстановление readiness 200 → 503 → 200. [Результаты приёмки](tasks/DM-007.md) |
 | DM-008 | Next.js Frontend Bootstrap | System Overview показывает состояние FastAPI и PostgreSQL | P0 | DONE | DM-001…DM-007 | Проверены сборка standalone, четыре Compose-сервиса, недоступность API, деградация БД и восстановление через Refresh. [Приёмка DM-008](tasks/DM-008.md) |
 | DM-009 | n8n Integration Bootstrap | System Health Check проверяет реальные health и readiness | P0 | DONE | DM-001…DM-008 | Проверены четыре диагностических исхода, повторы, история и повторный импорт. [Приёмка DM-009](tasks/DM-009.md) |
-| DM-010 | Testing & CI | Backend и frontend проверяются в GitHub Actions | P0 | IN_PROGRESS | DM-003, DM-006, DM-007, DM-008 | Проходят pytest для health, ready, конфигурации и БД, Ruff check/format, Mypy, frontend typecheck/build. Преднамеренная ошибка проваливает соответствующую проверку. |
-| DM-011 | Developer Documentation & Runbooks | README и инструкции соответствуют доступному окружению | P1 | BACKLOG | DM-007, DM-008, DM-009, DM-010 | Проверены команды запуска, миграции, импорта workflow, тестов и остановки. Актуализированы контекст, архитектура, начальная модель данных, стратегия тестов, ADR и changelog. |
-| DM-012 | Phase 0 Integration Smoke Test | Подтверждён воспроизводимый локальный запуск | P0 | BACKLOG | DM-009, DM-010, DM-011 | Из чистого checkout по runbook запускаются все сервисы. Проверены миграция, pgvector, API, UI, workflow, сохранение данных и CI. Результат записан. |
+| DM-010 | Testing & CI | Backend и frontend проверяются в GitHub Actions | P0 | DONE | DM-003, DM-006, DM-007, DM-008 | Проходят pytest для health, ready, конфигурации и БД, Ruff check/format, Mypy, frontend typecheck/build. Преднамеренная ошибка проваливает соответствующую проверку. [Протокол и CI](tasks/DM-010.md) |
+| DM-011 | Developer Documentation & Runbooks | README и инструкции соответствуют доступному окружению | P0 | DONE | DM-007, DM-008, DM-009, DM-010 | Проверены команды запуска, миграции, импорта workflow, тестов и остановки. Актуализированы контекст, архитектура, начальная модель данных, стратегия тестов, ADR и changelog. [Протокол](tasks/DM-011.md) |
+| DM-012 | Phase 0 Integration Smoke Test | Подтверждён воспроизводимый локальный запуск | P0 | READY | DM-009, DM-010, DM-011 | Из чистого checkout по runbook запускаются все сервисы. Проверены миграция, pgvector, API, UI, workflow, сохранение данных и CI. Результат записан. |
 
 ## PHASE 1 — CRM Data & Analytics
 

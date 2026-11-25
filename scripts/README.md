@@ -22,6 +22,8 @@
 
 Для стека нужны Docker Compose 2.24.4+ с Linux-контейнерами, Bash и curl. На Windows подходят Docker Desktop и Git Bash или WSL. Каждый локальный запуск получает уникальное имя. Отчёт режима перезаписывается, тестовые тома сохраняются. Параметр `--cleanup` предназначен для повторной очистки на runner конкретной попытки GitHub Actions. [Топология](../infra/docker/README.md)
 
+`scripts/tests/test_workflow_validator.py` создаёт синтетические временные fixtures и проверяет CLI в отдельном процессе. Запустите из корня `python -m unittest discover -s scripts/tests -v`. Для `check_repository.py` нужен Git checkout, проверяются пути относительных Markdown-ссылок. Для `check_package.py` сначала выполните `uv build` из `apps/api`. Локальный smoke читает уже запущенный полный стек; режимы ci_stack создают новый тестовый проект при каждом повторе. [Когда выбирать каждый уровень](../docs/TEST_STRATEGY.md)
+
 ## Проверка экспорта n8n
 
 Из корня запустите `python scripts/validate_n8n_workflow.py` с Python 3.12. Скрипт читает граф System Health Check и четыре примера из `automations/n8n`, проверяет ссылки между узлами, фиксированные назначения, повторы и контракт выходного item. При успехе он печатает PASS и возвращает 0. Для этой статической проверки Docker не требуется. [Проверка реального исполнения](../automations/n8n/workflows/system-health-check.md#14-testing)

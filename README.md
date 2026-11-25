@@ -1,144 +1,98 @@
 # DealMind — AI Sales Intelligence & Automation Platform
 
-DealMind проектируется для отдела продаж онлайн-школы. Менеджер сможет открыть сделку, увидеть причину риска и решить, какое действие предпринять. Руководитель сможет перейти от показателя воронки к сделкам, на которых этот показатель рассчитан.
-
-## Continuous Integration & Quality Assurance
+DealMind проектируется для отдела продаж онлайн-школы. Когда клиент меняет тариф или откладывает покупку, менеджеру нужны история договорённостей, следующий контакт и действующие условия курса. Руководителю нужен ответ на другой вопрос — на каком этапе и по каким причинам сделки перестают двигаться.
 
 [![DealMind CI](https://github.com/n1k1c0d/AI-Sales-Intelligence-Platform/actions/workflows/ci.yml/badge.svg?branch=dev)](https://github.com/n1k1c0d/AI-Sales-Intelligence-Platform/actions/workflows/ci.yml?query=branch%3Adev)
 
-`DealMind CI` запускается при push в `dev` и `main`, при открытии и обновлении PR в `main`, а также вручную через GitHub Actions. Параллельно проверяются структура репозитория, Python, PostgreSQL с Alembic, frontend, импорт и исполнение n8n, сборка и HTTP-проверки Docker. Итоговый `CI Gate` требует успеха всех шести jobs.
-
-Из корня можно запустить `python scripts/check_repository.py`, `python scripts/ci_stack.py n8n` и `python scripts/ci_stack.py smoke`. Команды для отдельных suites, артефакты и измеренное покрытие приведены в стратегии. Для первого запуска достаточно push в `dev`. Ручной запуск через интерфейс GitHub станет доступен, когда workflow появится в default branch. На этапе DM-010 локальные проверки пройдены, первый результат на GitHub ожидается. [Стратегия и локальные команды](docs/TEST_STRATEGY.md) · [Результаты DM-010](docs/tasks/DM-010.md)
-
-## Проблема бизнеса
-
-В CRM видны суммы и этапы, но из них трудно понять, кому сегодня нужен звонок и почему. Например, после разговора о рассрочке прошло больше 72 часов, следующего контакта в календаре нет, а условия оплаты изменились. Для решения нужны три разных свидетельства — история контактов, состояние сделки и действующая редакция условий курса.
-
 ## Возможности и статус проекта
 
-| Статус | Что доступно или запланировано |
+| Статус | Что можно проверить |
 | --- | --- |
-| Implemented | Docker Compose запускает Next.js, FastAPI, PostgreSQL 17 с pgvector и n8n. На странице System Overview видны состояние API и БД, время проверки и Request ID. Ручной workflow n8n System Health Check сохраняет один диагностический отчёт на запуск. Доступны Swagger UI, liveness и readiness с проверкой PostgreSQL, единый JSON-контракт ошибок, настройки APP_*, CORS, X-Request-ID, структурированные логи, тесты API и инфраструктурный smoke-тест. |
-| In Progress | Идёт PHASE 0. DM-010, Testing & CI, ожидает первого подтверждённого прогона на GitHub. |
-| Planned | API для синтетических CRM-данных, аналитика, Risk Engine, поиск по базе знаний с цитатами, AI Deal Analyst, интерфейс согласования и автоматизации через n8n. |
+| Implemented | FastAPI, настройки и JSON-логи с Request ID, PostgreSQL с pgvector и Alembic, Next.js System Overview, ручной workflow n8n, Docker Compose и семь jobs GitHub Actions. |
+| In progress | PHASE 0. Фундамент готов к приёмке из чистого клона в DM-012. CI для исходного кода DM-010 прошёл в ветке dev. |
+| Planned | CRM-модель и история, аналитика воронки, Risk Engine, база знаний, RAG, AI Deal Analyst, согласование и аудит внешних действий. |
 
-## Технологический стек
+**Целевой сценарий MVP.** Просроченный follow-up повысит риск сделки. Менеджер увидит причину, последнюю активность и источник условий курса, проверит предложение AI и сможет разрешить конкретное действие. Так разрозненные записи в CRM и базе знаний станут проверяемым основанием для следующего контакта.
 
-| Технологии | Назначение в целевой системе |
-| --- | --- |
-| Python 3.12+, FastAPI, Pydantic v2 | Типизированное REST API, бизнес-правила и проверка данных |
-| SQLAlchemy 2.x, Psycopg 3, Alembic | Запросы к БД, транзакции и миграции схемы |
-| PostgreSQL, pgvector | Сделки и история событий, документы и поиск по embeddings |
-| LangChain components, LangGraph | Обработка документов и retrieval, управление шагами анализа сделки и ожиданием решения пользователя |
-| OpenAI API, Langfuse | Начальный LLM-провайдер за заменяемым интерфейсом, трассировка и оценка ответов |
-| n8n | Интеграционные события, уведомления и исполнение разрешённых действий |
-| Next.js, React, TypeScript | Веб-интерфейс для менеджера и руководителя |
-| Tailwind CSS, shadcn/ui, Recharts | Стили, компоненты интерфейса и графики воронки |
-| uv, pytest, Ruff, Mypy | Воспроизводимое Python-окружение, тесты, стиль и проверка типов |
-| Docker, Docker Compose, GitHub Actions | Локальный запуск сервисов и автоматические проверки |
+## Архитектура PHASE 0
 
-## Архитектура
+```mermaid
+flowchart LR
+    Dev[Разработчик] --> Web[Next.js System Overview]
+    Dev --> Editor[n8n Editor]
+    Web -->|health и readiness через BFF| API[FastAPI]
+    Editor -->|Manual Trigger и HTTP GET| API
+    API -->|SELECT 1| DB[(PostgreSQL + pgvector)]
+```
 
-FastAPI Backend объединит доменные модули в одном приложении. Python и SQL рассчитают KPI и риск. RAG Engine подберёт источники, а AI Deal Analyst предложит следующий шаг по данным сделки. После подтверждения пользователем backend проверит полномочия, передаст действие в n8n и сохранит результат. [Компоненты, потоки данных и границы доступа](docs/ARCHITECTURE.md)
+Python 3.12, FastAPI, SQLAlchemy, Psycopg, Alembic, PostgreSQL 17, pgvector, Next.js, React, TypeScript и n8n работают в текущем стеке. Для будущего AI Deal Analyst запланированы LangGraph, retrieval по корпоративным документам и оценка качества ответов. [Архитектура и ADR](docs/ARCHITECTURE.md)
 
-## Структура репозитория
+![System Overview на локальном стенде DM-008](docs/assets/system-overview.png)
 
-Дерево показывает основные каталоги от корня Git. README каждой области описывает её назначение и ближайшую задачу. Разработка ведётся в `dev`. После проверки шага автор проекта открывает pull request в `main`.
+### Структура репозитория
 
 ```text
-.
-├── .editorconfig
-├── .gitignore
-├── .env.example         # Шаблон локальных настроек Compose
-├── docker-compose.yml   # Web, API, PostgreSQL с pgvector и n8n
-├── .github/workflows/   # Зарезервировано для CI
-├── apps/
-│   ├── api/             # Python-пакет, uv.lock и smoke-тесты
-│   └── web/             # Next.js App Router, System Overview и Vitest
-├── automations/n8n/     # Экспорты workflows и примеры интеграций
-├── data/demo/           # Синтетические данные
-├── docs/                # Спецификация, контекст, архитектура и roadmap
-│   ├── adr/             # Решения и их основания
-│   └── tasks/           # ТЗ и результаты проверки
-├── infra/docker/        # Дополнительные файлы Docker-окружения
-├── scripts/             # Вспомогательные операции разработки
-└── README.md
+apps/api/          FastAPI, миграции и тесты Python
+apps/web/          Next.js и тесты интерфейса
+automations/n8n/   экспорты workflow, примеры и контракты
+infra/docker/      PostgreSQL и изолированная CI-инфраструктура
+scripts/           проверки структуры, workflow и Docker
+data/demo/         правила для синтетических демонстрационных данных
+docs/              архитектура, ADR, runbook, сценарии и протоколы задач
+.github/workflows/ GitHub Actions
 ```
-
-## Getting Started
-
-Для локального API потребуются uv и Python 3.12. Из корня репозитория выполните
-
-```shell
-cd apps/api
-uv sync --locked
-uv run --locked uvicorn dealmind.main:app --reload --loop asyncio:SelectorEventLoop --no-access-log --host 127.0.0.1 --port 8000
-```
-
-Откройте `http://127.0.0.1:8000/docs` для Swagger UI или `/openapi.json` на том же сервере для схемы. Маршруты `GET /api/v1/health` и `GET /api/v1/ready` показывают доступность процесса и готовность приложения. Readiness возвращает 200, когда завершён startup и PostgreSQL ответила на `SELECT 1`. При локальном запуске без пароля БД liveness остаётся 200, readiness возвращает 503. [Установка, проверки и сборка backend](apps/api/README.md)
-
-Настройки процесса задают режим приложения, порог логирования и разрешённые origins. По заголовку `X-Request-ID` ответа можно найти событие в JSON-логах API. [Настройки и диагностика](apps/api/README.md#configuration--logging)
-
-Для локальной разработки интерфейса потребуются Node.js 24 LTS и npm 11. Из корня выполните
-
-```shell
-cd apps/web
-npm ci
-npm run dev
-```
-
-Откройте `http://127.0.0.1:3000`. Если API опубликован на другом порту, задайте его origin в `apps/web/.env.local`. [Руководство frontend](apps/web/README.md)
-
-![System Overview с результатами проверок работающего FastAPI и PostgreSQL](docs/assets/system-overview.png)
 
 ## Local Development with Docker
 
-Из корня репозитория можно поднять web, API, PostgreSQL 17 с pgvector и n8n. Нужны запущенный Docker Engine с поддержкой Linux-контейнеров и команда `docker compose` (Compose V2 или совместимая новая версия). На Windows это обеспечивает [Docker Desktop](https://docs.docker.com/desktop/setup/install/windows-install/).
+**Quick Start.** Нужны Git и запущенный Docker Engine с Compose. В новом рабочем каталоге клонируйте ветку разработки. В существующем checkout начните с проверки `git status --short --branch`.
 
-1. При первой настройке скопируйте `.env.example` в `.env`. В PowerShell используйте `Copy-Item .env.example .env`, в Bash — `cp .env.example .env`. Если файл уже существует, сохраните его значения.
-2. Заполните `POSTGRES_PASSWORD` и `N8N_ENCRYPTION_KEY` двумя независимыми случайными значениями. Для каждого можно выполнить `python -c "import secrets; print(secrets.token_hex(32))"`. Храните ключ n8n вместе с резервной копией данных. Реальный `.env` исключён из Git.
-3. Если порт занят, измените в `.env` соответствующий `*_HOST_PORT`. Проверьте конфигурацию и запустите сервисы.
+```shell
+git clone --branch dev https://github.com/n1k1c0d/AI-Sales-Intelligence-Platform.git dealmind
+cd dealmind
+```
+
+В корне нового клона создайте `.env` по `.env.example` (`cp -n .env.example .env` в Bash или `if (!(Test-Path .env)) { Copy-Item .env.example .env }` в PowerShell). Впишите разные случайные локальные значения для `POSTGRES_PASSWORD` и `N8N_ENCRYPTION_KEY`. Если `.env` уже есть, используйте его. Затем из корня:
 
 ```shell
 docker compose config --quiet
-docker compose up -d --wait db
 docker compose build api web
+docker compose up -d --wait db
 docker compose run --rm --no-deps api alembic upgrade head
 docker compose up -d --wait
 docker compose ps
 ```
 
-При портах из шаблона System Overview доступен по `http://127.0.0.1:3000`, web liveness — по `/api/health`, диагностика — по `/api/system/status` на том же сервере. Swagger UI доступен по `http://127.0.0.1:8000/docs`, OpenAPI — по `/openapi.json` на том же сервере. PostgreSQL слушает `127.0.0.1:5433`, редактор n8n — `http://127.0.0.1:5678`. При первом входе в n8n создайте локальную учётную запись владельца. Фактические порты можно посмотреть через `docker compose ps`.
+| Сервис | С хоста при портах из шаблона | Первая проверка |
+| --- | --- | --- |
+| Next.js | http://127.0.0.1:3000 | На System Overview нажмите Refresh Status |
+| FastAPI | http://127.0.0.1:8000/docs | В Swagger выполните GET health и ready |
+| PostgreSQL | `127.0.0.1:5433` | `docker compose port db 5432`, затем SQL-проверка по runbook |
+| n8n | http://127.0.0.1:5678 | Настройте владельца при первом входе, импортируйте System Health Check и выполните Manual Trigger |
 
-Для диагностики используйте `docker compose logs --tail 50 api` или подставьте имя другого сервиса. Команда `docker compose down` останавливает окружение и сохраняет данные. **Флаг `-v` удаляет тома PostgreSQL и n8n.** Если запуск завершается ошибкой, проверьте доступность Engine, занятость портов и заполнение `.env`. [SQL-проверки, сеть, тома и устранение ошибок](infra/docker/README.md)
+Фактические порты показывает `docker compose ps`. Ответ ready содержит состояние приложения и базы. У n8n в итоговом JSON есть execution ID и Request IDs для поиска в логах. [Контракты API](docs/API_CONTRACTS.md) · [Импорт и исполнение n8n](automations/n8n/workflows/system-health-check.md) · [Запуск, диагностика и остановка](docs/RUNBOOK.md)
 
-## Диагностика через n8n
+## Continuous Integration & Quality Assurance
 
-В локальном редакторе выберите **DealMind — System Health Check** и нажмите **Execute**. На вкладке Executions откройте конечный узел и его OUTPUT → JSON. Поля `overall_status` и `errors` показывают результат проверки. По двум Request ID можно найти конкретные обращения в логах FastAPI. При первом запуске на новом экземпляре импортируйте JSON из репозитория. [Импорт и запуск workflow](automations/n8n/workflows/system-health-check.md) · [Результаты DM-009](docs/tasks/DM-009.md)
-
-## Roadmap
-
-Разработка проходит через семь этапов. Сначала команда готовит локальное окружение (0), затем CRM-модель и аналитику (1), интеграции n8n (2), базу знаний и RAG (3), AI Deal Analyst (4), пользовательский интерфейс (5) и демонстрационный релиз с измерениями и сценариями (6). [Задачи, зависимости и критерии приёмки](docs/ROADMAP.md)
+При push в `dev` или `main`, PR в `main` и ручном запуске workflow проверяет репозиторий, backend, БД, frontend, n8n и Docker. Итоговый `CI Gate` требует успеха всех шести jobs. Локально из корня начните с `python scripts/check_repository.py` и `python scripts/validate_n8n_workflow.py`. Для запущенного стека выполните `bash scripts/smoke_infra.sh`. [Команды тестов и результаты](docs/TEST_STRATEGY.md)
 
 ## Документация
 
-- Пользователи, границы MVP, сценарии и текущее состояние — [Project Context](docs/PROJECT_CONTEXT.md).
-- Ответственность модулей, владельцы данных и потоки — [Architecture](docs/ARCHITECTURE.md).
-- Обоснование модульного монолита и границ n8n — [ADR-0001](docs/adr/0001-modular-monolith.md).
-- Состав работ и приёмка архитектурной задачи — [DM-001](docs/tasks/DM-001.md).
-- Структура monorepo и проверка правил Git — [DM-002](docs/tasks/DM-002.md).
-- Python-окружение, упаковка и результаты приёмки — [DM-003](docs/tasks/DM-003.md).
-- Контракты HTTP API и результаты проверки Uvicorn — [DM-004](docs/tasks/DM-004.md).
-- Локальное Docker-окружение и проверка сохранности данных — [DM-005](docs/tasks/DM-005.md).
-- Настройки, корреляция запросов и проверка CORS — [DM-006](docs/tasks/DM-006.md).
-- Асинхронные сессии, миграции и изолированные PostgreSQL-тесты — [руководство backend](apps/api/README.md#database-architecture) и [приёмка DM-007](docs/tasks/DM-007.md).
-- Снимки экрана, сценарии отказа и результаты проверки frontend — [DM-008](docs/tasks/DM-008.md).
-- Полный исходный замысел и правила разработки — [Master Specification v1.0](docs/MASTER_SPEC.md).
+| Задача читателя | Где искать |
+| --- | --- |
+| Понять продукт и текущие ограничения | [Project Context](docs/PROJECT_CONTEXT.md) · [Master Spec](docs/MASTER_SPEC.md) |
+| Разобраться в компонентах и данных | [Архитектура](docs/ARCHITECTURE.md) · [Модель данных](docs/DATA_MODEL.md) · [API](docs/API_CONTRACTS.md) |
+| Настроить и сопровождать стенд | [Переменные окружения](docs/ENVIRONMENT.md) · [Runbook](docs/RUNBOOK.md) |
+| Показать проект и воспроизвести проверки | [Демонстрации](docs/DEMO_SCENARIOS.md) · [Стратегия тестирования](docs/TEST_STRATEGY.md) |
+| Продолжить разработку | [Инструкции агента](AGENTS.md) · [Roadmap](docs/ROADMAP.md) · [Changelog](CHANGELOG.md) |
 
-## Ограничения
+## Roadmap
 
-Первая демонстрация рассчитана на одну организацию и синтетические данные. Сейчас работающих AI-функций и подтверждённых production-метрик нет. Первый MVP ограничен локальным запуском, согласованными действиями и демонстрационным CRM-источником. Интеграция с реальной CRM и публичное развёртывание потребуют отдельных задач.
+PHASE 0 готовит фундамент и его комплексную приёмку. PHASE 1 вводит CRM и аналитику, PHASE 2 — события и автоматизацию n8n, PHASE 3 — знания и RAG, PHASE 4 — AI Deal Analyst с Human Approval. PHASE 5 посвящена бизнес-дашборду, PHASE 6 — качеству, развёртыванию и демонстрации. [Задачи и зависимости](docs/ROADMAP.md)
 
-## Назначение для портфолио
+## Ограничения и безопасность
 
-На этом этапе можно оценить архитектурное решение и проследить путь от бизнес-проблемы до проверяемых критериев. По мере реализации к ним добавятся модели и миграции, тесты правил риска, оценки качества retrieval и прикладные workflows n8n.
+Стенд предназначен для локальной разработки. Порты публикуются на loopback. Прикладная аутентификация и изоляция организаций ещё в плане. Для демо используйте синтетические данные. Сохраняйте `.env` и ключ шифрования n8n вне Git. В PostgreSQL сейчас находится миграционный фундамент. В n8n собственная SQLite с историей запусков.
+
+## Автор и портфолио
+
+Репозиторий владельца n1k1c0d демонстрирует проектирование HTTP-контрактов, разделение ответственности между Python и n8n и диагностику реального отказа БД. Доказательства доступны в тестах, истории Git и протоколах приёмки. По принятому языковому стандарту README и инженерные документы преимущественно на русском, код и идентификаторы — на английском. [Сценарии показа](docs/DEMO_SCENARIOS.md) · [Языковые правила](docs/MASTER_SPEC.md)

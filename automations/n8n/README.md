@@ -36,6 +36,8 @@ docker compose exec -T n8n node -e "fetch('http://api:8000/api/v1/ready').then(a
 | --- | --- | --- | --- |
 | [System Health Check](workflows/system-health-check.md) | Manual | Диагностика FastAPI и PostgreSQL через health/readiness | 1.0.0 |
 
+В Git зарегистрирован один переносимый workflow. Внутренний ID экземпляра назначает n8n при импорте. Для показа пройдите сценарий DEMO-005, а отказы воспроизводите на стенде DEMO-006. [Демонстрации](../../docs/DEMO_SCENARIOS.md) · [Эксплуатация](../../docs/RUNBOOK.md)
+
 ## 7. Naming Conventions
 
 Имя в редакторе начинается с DealMind и описывает операцию. Имя экспортируемого файла записывается в kebab-case. Рядом с JSON хранится одноимённый Markdown с входом, результатом, поведением при ошибке и порядком проверки. Названия узлов на английском обозначают их действие.

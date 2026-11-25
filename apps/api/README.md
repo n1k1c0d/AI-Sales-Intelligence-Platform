@@ -71,7 +71,7 @@ uv run --locked uvicorn dealmind.main:app --reload --loop asyncio:SelectorEventL
 | Метод и путь | Код | Результат |
 | --- | --- | --- |
 | GET `/api/v1/health` | 200 | `{"status":"ok","service":"dealmind-api"}` |
-| GET `/api/v1/ready` | 200 | `{"status":"ready","checks":{"application":"ok","database":"ok"}}` после startup |
+| GET `/api/v1/ready` | 200 | `{"status":"ready","checks":{"application":"ok","database":"ok"}}` после startup и успешного SELECT 1 |
 | GET `/api/v1/ready` | 503 | `{"status":"not_ready","checks":{"application":"ok","database":"not_ready"}}` при неготовности |
 | GET `/openapi.json` | 200 | OpenAPI с моделями ответов, включая 503 для readiness |
 | GET `/docs` | 200 | Swagger UI с обоими маршрутами |
@@ -84,6 +84,8 @@ curl -i http://127.0.0.1:8000/openapi.json
 ```
 
 Откройте `http://127.0.0.1:8000/docs` в браузере. Swagger UI использует стандартные браузерные ресурсы FastAPI с CDN. Liveness подтверждает способность HTTP-процесса ответить. Readiness проверяет состояние приложения и выполняет `SELECT 1` в PostgreSQL.
+
+Полная матрица HTTP-кодов, поведения до startup и правил X-Request-ID — в [контрактах API](../../docs/API_CONTRACTS.md). Источники настроек и их приоритет — в [справочнике окружения](../../docs/ENVIRONMENT.md).
 
 ## Контракт ошибок
 
@@ -132,7 +134,7 @@ Hatchling собирает source distribution (`.tar.gz`) и wheel (`.whl`) в 
 
 ## Запуск в Docker
 
-Из корня monorepo подготовьте локальный `.env` по шаблону. `docker compose build api` собирает Python 3.12.13 и runtime-зависимости из `uv.lock`. Сначала uv устанавливает зависимости, затем копируется исходный код и устанавливается пакет в обычном режиме. В финальный слой попадает только собранное окружение. Сервис запускает `dealmind.main:app` через Uvicorn от пользователя `dealmind` (UID 10001). Параметр `--reload` применяется при локальной разработке на хосте.
+Из корня monorepo подготовьте локальный `.env` по шаблону. `docker compose build api` собирает Python 3.12.13 и runtime-зависимости из `uv.lock`. Сначала uv устанавливает зависимости, затем копируется исходный код и устанавливается пакет в обычном режиме. В финальный слой копируются собранное окружение, alembic.ini и каталог миграций. Сервис запускает `dealmind.main:app` через Uvicorn от пользователя `dealmind` (UID 10001). Параметр `--reload` применяется при локальной разработке на хосте.
 
 Команда `docker compose up -d --build --wait` запускает всё окружение. Docker проверяет `/api/v1/health` изнутри контейнера через стандартную библиотеку Python. `/api/v1/ready` проверяет lifespan и доступность БД. PostgreSQL и n8n имеют собственные проверки. `API_HOST_PORT` выбирает порт хоста, внутри сети API всегда слушает `api:8000`. Пароль PostgreSQL передаётся в db и api, ключ n8n — в n8n. [Инфраструктурный runbook](../../infra/docker/README.md)
 
