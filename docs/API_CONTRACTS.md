@@ -51,4 +51,4 @@
 
 Результат ручного workflow использует snake_case, собственный execution ID, статусы сервисов и список errors. [Вход, выход и примеры n8n](../automations/n8n/workflows/system-health-check.md)
 
-Для последующих фаз рассматриваются группы `deals`, `contacts`, `activities`, `analytics`, `risks`, `integrations`, `knowledge`, `recommendations`, `approvals` под `/api/v1`. Пути и модели будут согласованы вместе с доменом. [Концептуальная модель](DATA_MODEL.md)
+Для последующих фаз рассматриваются группы `deals`, `contacts`, `activities`, `analytics`, `risks`, `integrations`, `knowledge`, `recommendations`, `approvals` под `/api/v1`. Для будущих CRM-команд DM-104 должен учитывать границу организации, строгую десятичную сумму и время с явным смещением. Для изменения этапа DM-105 должен учитывать ожидаемый номер перехода и повтор внешнего события. HTTP-пути, payload и коды ответов будут определены в соответствующих задачах. [Логическая CRM-модель](DATA_MODEL.md)
