@@ -1,0 +1,20 @@
+name: dealmind-db-test
+services:
+  postgres-test:
+    image: pgvector/pgvector:0.8.7-pg17-trixie@sha256:89947206f52eac3a9df9b663df7e76987cbdc623be6576b3a524953d568700d7
+    environment:
+      POSTGRES_DB: dealmind_test
+      POSTGRES_USER: dealmind_test
+      # Public, local-only disposable test credential.
+      POSTGRES_PASSWORD: ${DEALMIND_TEST_DB_PASSWORD:-dealmind-test-only}
+    ports:
+      - "127.0.0.1:${DEALMIND_TEST_DB_PORT:-55433}:5432"
+    volumes:
+      - test_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-h", "127.0.0.1", "-U", "dealmind_test", "-d", "dealmind_test"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+volumes:
+  test_postgres_data:

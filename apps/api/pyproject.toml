@@ -1,0 +1,59 @@
+[project]
+name = "dealmind-api"
+version = "0.1.0"
+description = "Backend package for the DealMind sales intelligence platform"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "alembic>=1.20.1",
+    "fastapi>=0.165.0",
+    "psycopg[binary]>=3,<4",
+    "pydantic>=2,<3",
+    "pydantic-settings>=2,<3",
+    "sqlalchemy[asyncio]>=2.0,<3",
+    "uvicorn>=0.54.0",
+]
+
+[dependency-groups]
+dev = [
+    "httpx>=0.28.1",
+    "mypy>=2.4.1",
+    "pytest>=9.2.0",
+    "pytest-asyncio>=1.5.0",
+    "pytest-cov>=7.1.0",
+    "ruff>=0.17.6",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build]
+exclude = ["**/.gitkeep"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/dealmind"]
+
+[tool.hatch.build.targets.sdist]
+include = ["/src/dealmind", "/tests/**/*.py", "/.python-version", "/uv.lock", "/alembic.ini", "/alembic"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+src = ["src"]
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I", "B", "UP"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_unused_configs = true
+mypy_path = "src"
+files = ["src", "tests"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_default_fixture_loop_scope = "function"
+markers = ["database: requires the isolated dealmind-db-test PostgreSQL project"]
+addopts = "-ra --strict-markers --strict-config -m 'not database'"

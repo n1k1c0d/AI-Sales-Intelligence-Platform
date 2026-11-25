@@ -1,0 +1,1327 @@
+{
+  "baseline": "382730ceee04b641f44a7fc77394778ae3bb2d87",
+  "branch": "dev",
+  "date": "2026-11-25",
+  "composeProject": "dealmind-acceptance-b79724bc3",
+  "portsOnIPv4Loopback": {
+    "api": 18000,
+    "web": 13000,
+    "db": 15433,
+    "n8n": 15678
+  },
+  "clone": {
+    "files": 162,
+    "bytes": 1943579,
+    "initialTree": "clean",
+    "finalTree": "clean"
+  },
+  "tests": {
+    "backend": {
+      "tests": 65,
+      "failed": 0,
+      "skipped": 0
+    },
+    "database": {
+      "tests": 4,
+      "failed": 0,
+      "skipped": 0
+    },
+    "frontend": {
+      "tests": 29,
+      "failed": 0,
+      "skipped": 0
+    },
+    "lineCoverage": {
+      "lines-covered": "325",
+      "lines-valid": "343",
+      "line-rate": "0.9475"
+    }
+  },
+  "validatorTests": 9,
+  "ci": {
+    "url": "https://github.com/n1k1c0d/AI-Sales-Intelligence-Platform/actions/runs/45577247614",
+    "sha": "382730ceee04b641f44a7fc77394778ae3bb2d87",
+    "branch": "dev",
+    "status": "completed",
+    "result": "success",
+    "jobs": [
+      {
+        "name": "database-integration",
+        "conclusion": "success"
+      },
+      {
+        "name": "docker-smoke",
+        "conclusion": "success"
+      },
+      {
+        "name": "frontend-quality",
+        "conclusion": "success"
+      },
+      {
+        "name": "n8n-validation",
+        "conclusion": "success"
+      },
+      {
+        "name": "backend-quality",
+        "conclusion": "success"
+      },
+      {
+        "name": "repository-checks",
+        "conclusion": "success"
+      },
+      {
+        "name": "CI Gate",
+        "conclusion": "success"
+      }
+    ],
+    "artifacts": [
+      {
+        "name": "n8n-report",
+        "expired": false
+      },
+      {
+        "name": "frontend-report",
+        "expired": false
+      },
+      {
+        "name": "backend-reports",
+        "expired": false
+      },
+      {
+        "name": "smoke-report",
+        "expired": false
+      },
+      {
+        "name": "database-report",
+        "expired": false
+      }
+    ]
+  },
+  "artifacts": {
+    "n8n-report": [
+      "n8n.json"
+    ],
+    "frontend-report": [
+      "frontend-junit.xml"
+    ],
+    "backend-reports": [
+      "backend-junit.xml",
+      "backend-coverage.xml"
+    ],
+    "smoke-report": [
+      "smoke.json"
+    ],
+    "database-report": [
+      "database-junit.xml"
+    ]
+  },
+  "http": {
+    "404": [
+      404,
+      {
+        "error": {
+          "code": "NOT_FOUND",
+          "message": "Resource not found",
+          "details": null
+        }
+      },
+      "9eba3fd7-76bc-4796-b067-087cf72aa1b3"
+    ],
+    "405": [
+      405,
+      {
+        "error": {
+          "code": "METHOD_NOT_ALLOWED",
+          "message": "HTTP method is not allowed",
+          "details": null
+        }
+      },
+      "60765672-1d43-4361-864b-3cc281e05ffc"
+    ],
+    "health": [
+      200,
+      {
+        "status": "ok",
+        "service": "dealmind-api"
+      },
+      "10d914db-050f-4be7-9cb8-4850fa585564"
+    ],
+    "ready": [
+      200,
+      {
+        "status": "ready",
+        "checks": {
+          "application": "ok",
+          "database": "ok"
+        }
+      },
+      "4bfe11ca-031d-4454-963c-a621ff4da408"
+    ],
+    "openapi": [
+      200,
+      [
+        "/api/v1/health",
+        "/api/v1/ready"
+      ],
+      "0b27af5a-135e-4d7f-976a-3d5c32d1ab4a"
+    ],
+    "swagger": [
+      200,
+      "HTML",
+      "4cc101d7-ad84-44a5-9f86-56e9ae23c11a"
+    ],
+    "webhealth": [
+      200,
+      {
+        "status": "ok",
+        "service": "dealmind-web"
+      },
+      null
+    ],
+    "accepted": "2cc1dd31-a5ed-409a-95e1-a0949e543027",
+    "replaced": "9edf4098-1d56-440e-a566-5eafc353b9bf",
+    "allowed": [
+      200,
+      "http://127.0.0.1:13000"
+    ],
+    "denied": [
+      400,
+      null
+    ]
+  },
+  "negativeConfiguration": {
+    "valid": [
+      200,
+      {
+        "status": "ready",
+        "checks": {
+          "application": "ok",
+          "database": "ok"
+        }
+      }
+    ],
+    "invalid": [
+      503,
+      {
+        "status": "not_ready",
+        "checks": {
+          "application": "ok",
+          "database": "not_ready"
+        }
+      }
+    ],
+    "loop": "asyncio:SelectorEventLoop",
+    "defaultTestClientStatus": 500
+  },
+  "database": {
+    "facts": "PostgreSQL 17.12 (Debian 17.12-1.pgdg13+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit\n0.8.7\n1.4142135623730951\n0001\nalembic_version",
+    "alembic": {
+      "current": "0001 (head)",
+      "heads": "0001 (head)",
+      "history": "<base> -> 0001 (head), Enable pgvector and establish the DealMind migration baseline."
+    },
+    "marker": "f341ee71-7ef0-4990-9e44-869d86f38009",
+    "api": "758b363beeef6e19cff206edf366663a612cfe686b615d5f1170606abc74f1d7 2026-11-25T08:43:39.782298111Z",
+    "finalPublicTables": [
+      "alembic_version"
+    ]
+  },
+  "serviceChecks": {
+    "smoke": [
+      "PASS: health, application readiness, OpenAPI and Swagger",
+      "PASS: PostgreSQL, pgvector extension and L2 distance",
+      "PASS: frontend health, operational BFF probes and System Overview",
+      "PASS: n8n UI, readiness and n8n-to-API service discovery"
+    ],
+    "users": {
+      "api": "10001",
+      "web": "1000",
+      "n8n": "1000"
+    },
+    "wrongPassword": 503,
+    "logProbe": {
+      "requestId": "dc1bfb57-5e40-4123-b8a5-49f8b225fed6",
+      "status": 405,
+      "matches": 1
+    },
+    "publicAssetsExamined": 12,
+    "openapi": {
+      "info": {
+        "title": "DealMind API",
+        "description": "System endpoints for the DealMind sales intelligence backend.",
+        "version": "0.1.0"
+      },
+      "paths": {
+        "/api/v1/health": [
+          "200",
+          "422",
+          "500"
+        ],
+        "/api/v1/ready": [
+          "200",
+          "422",
+          "500",
+          "503"
+        ]
+      },
+      "schemas": [
+        "ErrorDetail",
+        "ErrorResponse",
+        "HealthResponse",
+        "ReadinessChecks",
+        "ReadinessResponse",
+        "ValidationIssue"
+      ]
+    },
+    "workflowSettingsMatch": true,
+    "workflowSettings": {
+      "executionOrder": "v1",
+      "executionTimeout": 60,
+      "saveManualExecutions": true,
+      "saveDataSuccessExecution": "all",
+      "saveDataErrorExecution": "all"
+    },
+    "retries": [
+      {
+        "name": "Check API Health",
+        "maxTries": 2,
+        "delay": 1000,
+        "timeout": 8000
+      },
+      {
+        "name": "Check API Readiness",
+        "maxTries": 2,
+        "delay": 1000,
+        "timeout": 8000
+      }
+    ],
+    "n8nVersion": "2.48.8",
+    "docker": "29.6.2",
+    "compose": "5.3.1",
+    "git": "git version 2.53.0.windows.2",
+    "healthy": {
+      "api": "healthy",
+      "web": "healthy",
+      "db": "healthy",
+      "n8n": "healthy"
+    }
+  },
+  "security": {
+    "history": {
+      "blobs": 252,
+      "flags": [],
+      "forbidden": []
+    },
+    "pypi": {
+      "packages": 42,
+      "findings": []
+    },
+    "npmVulnerabilities": 0
+  },
+  "workflowImport": {
+    "original": "jFggox10NQHWv5uR",
+    "after": [
+      "jFggox10NQHWv5uR",
+      "0PYMFWBStQekmdoJ"
+    ],
+    "newId": "0PYMFWBStQekmdoJ"
+  },
+  "workflowRuns": {
+    "operational": {
+      "schema_version": "1.0",
+      "workflow": "system-health-check",
+      "workflow_version": "1.0.0",
+      "execution_id": "1",
+      "started_at": "2026-11-25T08:49:24.138Z",
+      "finished_at": "2026-11-25T08:49:25.694Z",
+      "duration_ms": 1556,
+      "overall_status": "operational",
+      "services": {
+        "backend": {
+          "status": "operational",
+          "http_status": 200,
+          "request_id": "f908e1c5-0439-4aa2-aa0b-55405e839b74"
+        },
+        "readiness": {
+          "status": "operational",
+          "http_status": 200,
+          "request_id": "6189a8f2-c8de-4e0e-8a43-283d795a51c2"
+        },
+        "database": {
+          "status": "operational"
+        }
+      },
+      "errors": []
+    },
+    "repeat": {
+      "schema_version": "1.0",
+      "workflow": "system-health-check",
+      "workflow_version": "1.0.0",
+      "execution_id": "2",
+      "started_at": "2026-11-25T08:49:32.985Z",
+      "finished_at": "2026-11-25T08:49:34.218Z",
+      "duration_ms": 1233,
+      "overall_status": "operational",
+      "services": {
+        "backend": {
+          "status": "operational",
+          "http_status": 200,
+          "request_id": "323cf8b6-2c7f-4ce5-bb36-278a19368cf2"
+        },
+        "readiness": {
+          "status": "operational",
+          "http_status": 200,
+          "request_id": "c8cbec14-d71e-4ba5-9159-a6a6f23c671f"
+        },
+        "database": {
+          "status": "operational"
+        }
+      },
+      "errors": []
+    },
+    "degraded": {
+      "schema_version": "1.0",
+      "workflow": "system-health-check",
+      "workflow_version": "1.0.0",
+      "execution_id": "3",
+      "started_at": "2026-11-25T08:50:36.378Z",
+      "finished_at": "2026-11-25T08:50:40.557Z",
+      "duration_ms": 4179,
+      "overall_status": "degraded",
+      "services": {
+        "backend": {
+          "status": "operational",
+          "http_status": 200,
+          "request_id": "b736864f-48bc-41e2-ad33-01beb3d60226"
+        },
+        "readiness": {
+          "status": "degraded",
+          "http_status": 503,
+          "request_id": "0a9c42af-6596-470a-a26a-4aab007b587e"
+        },
+        "database": {
+          "status": "not_ready"
+        }
+      },
+      "errors": [
+        {
+          "code": "DATABASE_NOT_READY",
+          "message": "Database readiness check failed",
+          "source": "readiness"
+        }
+      ]
+    },
+    "db-recovery": {
+      "schema_version": "1.0",
+      "workflow": "system-health-check",
+      "workflow_version": "1.0.0",
+      "execution_id": "4",
+      "started_at": "2026-11-25T08:51:02.532Z",
+      "finished_at": "2026-11-25T08:51:03.688Z",
+      "duration_ms": 1156,
+      "overall_status": "operational",
+      "services": {
+        "backend": {
+          "status": "operational",
+          "http_status": 200,
+          "request_id": "7f7d013d-eb61-4dc7-8685-3589a549597b"
+        },
+        "readiness": {
+          "status": "operational",
+          "http_status": 200,
+          "request_id": "2b596af2-5c9f-4d50-a7f5-85411b4df165"
+        },
+        "database": {
+          "status": "operational"
+        }
+      },
+      "errors": []
+    },
+    "unavailable": {
+      "schema_version": "1.0",
+      "workflow": "system-health-check",
+      "workflow_version": "1.0.0",
+      "execution_id": "5",
+      "started_at": "2026-11-25T08:51:16.515Z",
+      "finished_at": "2026-11-25T08:51:18.718Z",
+      "duration_ms": 2203,
+      "overall_status": "unavailable",
+      "services": {
+        "backend": {
+          "status": "unavailable",
+          "http_status": null,
+          "request_id": null
+        },
+        "readiness": {
+          "status": "unknown",
+          "http_status": null,
+          "request_id": null
+        },
+        "database": {
+          "status": "unknown"
+        }
+      },
+      "errors": [
+        {
+          "code": "NETWORK_ERROR",
+          "message": "Could not connect to the API",
+          "source": "health"
+        },
+        {
+          "code": "NETWORK_ERROR",
+          "message": "Could not connect to the API",
+          "source": "readiness"
+        }
+      ]
+    },
+    "api-recovery": {
+      "schema_version": "1.0",
+      "workflow": "system-health-check",
+      "workflow_version": "1.0.0",
+      "execution_id": "6",
+      "started_at": "2026-11-25T08:51:43.429Z",
+      "finished_at": "2026-11-25T08:51:44.492Z",
+      "duration_ms": 1063,
+      "overall_status": "operational",
+      "services": {
+        "backend": {
+          "status": "operational",
+          "http_status": 200,
+          "request_id": "85bd847f-717a-457b-9913-de1bc95b8723"
+        },
+        "readiness": {
+          "status": "operational",
+          "http_status": 200,
+          "request_id": "8e576c68-a107-4ffc-9bf5-546b37a59d56"
+        },
+        "database": {
+          "status": "operational"
+        }
+      },
+      "errors": []
+    },
+    "no-web": {
+      "schema_version": "1.0",
+      "workflow": "system-health-check",
+      "workflow_version": "1.0.0",
+      "execution_id": "7",
+      "started_at": "2026-11-25T08:51:52.338Z",
+      "finished_at": "2026-11-25T08:51:53.381Z",
+      "duration_ms": 1043,
+      "overall_status": "operational",
+      "services": {
+        "backend": {
+          "status": "operational",
+          "http_status": 200,
+          "request_id": "7d431f78-15a2-43be-9254-82d230662513"
+        },
+        "readiness": {
+          "status": "operational",
+          "http_status": 200,
+          "request_id": "6e25a2eb-69e5-4439-a5d4-88460e662be1"
+        },
+        "database": {
+          "status": "operational"
+        }
+      },
+      "errors": []
+    },
+    "n8n-recovery": {
+      "schema_version": "1.0",
+      "workflow": "system-health-check",
+      "workflow_version": "1.0.0",
+      "execution_id": "8",
+      "started_at": "2026-11-25T08:52:17.575Z",
+      "finished_at": "2026-11-25T08:52:18.981Z",
+      "duration_ms": 1406,
+      "overall_status": "operational",
+      "services": {
+        "backend": {
+          "status": "operational",
+          "http_status": 200,
+          "request_id": "64909c13-1384-4b4a-b1b4-e6a47281ca4e"
+        },
+        "readiness": {
+          "status": "operational",
+          "http_status": 200,
+          "request_id": "15457754-4a55-4c46-9b61-32daa1489d56"
+        },
+        "database": {
+          "status": "operational"
+        }
+      },
+      "errors": []
+    },
+    "unknown": {
+      "schema_version": "1.0",
+      "workflow": "system-health-check",
+      "workflow_version": "1.0.0",
+      "execution_id": "9",
+      "started_at": "2026-11-25T08:52:31.491Z",
+      "finished_at": "2026-11-25T08:52:32.577Z",
+      "duration_ms": 1086,
+      "overall_status": "unknown",
+      "services": {
+        "backend": {
+          "status": "unknown",
+          "http_status": 200,
+          "request_id": null
+        },
+        "readiness": {
+          "status": "unknown",
+          "http_status": 200,
+          "request_id": null
+        },
+        "database": {
+          "status": "unknown"
+        }
+      },
+      "errors": [
+        {
+          "code": "INVALID_RESPONSE",
+          "message": "Response did not match the API contract",
+          "source": "health"
+        },
+        {
+          "code": "INVALID_RESPONSE",
+          "message": "Response did not match the API contract",
+          "source": "readiness"
+        }
+      ]
+    },
+    "http-status": {
+      "schema_version": "1.0",
+      "workflow": "system-health-check",
+      "workflow_version": "1.0.0",
+      "execution_id": "10",
+      "started_at": "2026-11-25T08:52:52.696Z",
+      "finished_at": "2026-11-25T08:52:53.778Z",
+      "duration_ms": 1082,
+      "overall_status": "unknown",
+      "services": {
+        "backend": {
+          "status": "unknown",
+          "http_status": 502,
+          "request_id": null
+        },
+        "readiness": {
+          "status": "unknown",
+          "http_status": 502,
+          "request_id": null
+        },
+        "database": {
+          "status": "unknown"
+        }
+      },
+      "errors": [
+        {
+          "code": "HTTP_ERROR",
+          "message": "Unexpected HTTP status",
+          "source": "health"
+        },
+        {
+          "code": "HTTP_ERROR",
+          "message": "Unexpected HTTP status",
+          "source": "readiness"
+        }
+      ]
+    },
+    "timeout": {
+      "schema_version": "1.0",
+      "workflow": "system-health-check",
+      "workflow_version": "1.0.0",
+      "execution_id": "11",
+      "started_at": "2026-11-25T08:53:07.05Z",
+      "finished_at": "2026-11-25T08:53:41.207Z",
+      "duration_ms": 34157,
+      "overall_status": "unavailable",
+      "services": {
+        "backend": {
+          "status": "unavailable",
+          "http_status": null,
+          "request_id": null
+        },
+        "readiness": {
+          "status": "unknown",
+          "http_status": null,
+          "request_id": null
+        },
+        "database": {
+          "status": "unknown"
+        }
+      },
+      "errors": [
+        {
+          "code": "TIMEOUT",
+          "message": "API request timed out",
+          "source": "health"
+        },
+        {
+          "code": "TIMEOUT",
+          "message": "API request timed out",
+          "source": "readiness"
+        }
+      ]
+    },
+    "stack-restart": {
+      "schema_version": "1.0",
+      "workflow": "system-health-check",
+      "workflow_version": "1.0.0",
+      "execution_id": "12",
+      "started_at": "2026-11-25T08:54:28.442Z",
+      "finished_at": "2026-11-25T08:54:29.753Z",
+      "duration_ms": 1311,
+      "overall_status": "operational",
+      "services": {
+        "backend": {
+          "status": "operational",
+          "http_status": 200,
+          "request_id": "eec1635a-e297-493d-ab96-bffef414ae07"
+        },
+        "readiness": {
+          "status": "operational",
+          "http_status": 200,
+          "request_id": "2b391730-b7ae-4db2-88d8-5849fdc6e1f3"
+        },
+        "database": {
+          "status": "operational"
+        }
+      },
+      "errors": []
+    },
+    "recreate": {
+      "schema_version": "1.0",
+      "workflow": "system-health-check",
+      "workflow_version": "1.0.0",
+      "execution_id": "13",
+      "started_at": "2026-11-25T08:54:52.839Z",
+      "finished_at": "2026-11-25T08:54:54.249Z",
+      "duration_ms": 1410,
+      "overall_status": "operational",
+      "services": {
+        "backend": {
+          "status": "operational",
+          "http_status": 200,
+          "request_id": "0f825bcb-f108-4055-950f-62dc733bdd2a"
+        },
+        "readiness": {
+          "status": "operational",
+          "http_status": 200,
+          "request_id": "46a4d38a-4493-4f36-81b7-ff537d525b40"
+        },
+        "database": {
+          "status": "operational"
+        }
+      },
+      "errors": []
+    }
+  },
+  "correlation": {
+    "operational": [
+      {
+        "timestamp": "2026-11-25T08:49:24.201Z",
+        "level": "INFO",
+        "logger": "dealmind.api",
+        "message": "HTTP request completed",
+        "service": "dealmind-api",
+        "environment": "test",
+        "request_id": "f908e1c5-0439-4aa2-aa0b-55405e839b74",
+        "event": "http.request.completed",
+        "http_method": "GET",
+        "http_route": "/api/v1/health",
+        "status_code": 200,
+        "duration_ms": 0.994
+      },
+      {
+        "timestamp": "2026-11-25T08:49:24.238Z",
+        "level": "INFO",
+        "logger": "dealmind.api",
+        "message": "HTTP request completed",
+        "service": "dealmind-api",
+        "environment": "test",
+        "request_id": "6189a8f2-c8de-4e0e-8a43-283d795a51c2",
+        "event": "http.request.completed",
+        "http_method": "GET",
+        "http_route": "/api/v1/ready",
+        "status_code": 200,
+        "duration_ms": 4.473
+      }
+    ],
+    "degraded": [
+      {
+        "timestamp": "2026-11-25T08:50:36.437Z",
+        "level": "INFO",
+        "logger": "dealmind.api",
+        "message": "HTTP request completed",
+        "service": "dealmind-api",
+        "environment": "test",
+        "request_id": "b736864f-48bc-41e2-ad33-01beb3d60226",
+        "event": "http.request.completed",
+        "http_method": "GET",
+        "http_route": "/api/v1/health",
+        "status_code": 200,
+        "duration_ms": 0.825
+      },
+      {
+        "timestamp": "2026-11-25T08:50:40.47Z",
+        "level": "INFO",
+        "logger": "dealmind.api",
+        "message": "HTTP request completed",
+        "service": "dealmind-api",
+        "environment": "test",
+        "request_id": "0a9c42af-6596-470a-a26a-4aab007b587e",
+        "event": "http.request.completed",
+        "http_method": "GET",
+        "http_route": "/api/v1/ready",
+        "status_code": 503,
+        "duration_ms": 4004.894
+      }
+    ]
+  },
+  "bff": {
+    "bff-operational": {
+      "checkedAt": "2026-11-25T08:49:18.541Z",
+      "overallStatus": "operational",
+      "backend": {
+        "httpStatus": 200,
+        "requestId": "9c696cb5-a767-4455-853f-a677c4f36bb6",
+        "durationMs": 22,
+        "error": null,
+        "status": "operational"
+      },
+      "database": {
+        "status": "operational"
+      },
+      "readiness": {
+        "httpStatus": 200,
+        "requestId": "8b1a5446-ee13-4813-8306-007732bb4aca",
+        "durationMs": 18,
+        "error": null,
+        "status": "operational"
+      }
+    },
+    "db-outage": {
+      "status": 503,
+      "body": {
+        "status": "not_ready",
+        "checks": {
+          "application": "ok",
+          "database": "not_ready"
+        }
+      },
+      "snapshot": {
+        "checkedAt": "2026-11-25T08:50:31.342Z",
+        "overallStatus": "degraded",
+        "backend": {
+          "httpStatus": 200,
+          "requestId": "df47da49-f3dc-4cd2-87b2-528fa10e3029",
+          "durationMs": 5,
+          "error": null,
+          "status": "operational"
+        },
+        "database": {
+          "status": "degraded"
+        },
+        "readiness": {
+          "httpStatus": 503,
+          "requestId": "6a57e2bd-833e-4a22-a38a-81e7fcc97416",
+          "durationMs": 4008,
+          "error": null,
+          "status": "degraded"
+        }
+      }
+    },
+    "api-outage": {
+      "checkedAt": "2026-11-25T08:51:11.162Z",
+      "overallStatus": "unavailable",
+      "backend": {
+        "httpStatus": null,
+        "requestId": null,
+        "durationMs": 4,
+        "error": "NETWORK_ERROR",
+        "status": "unavailable"
+      },
+      "database": {
+        "status": "unknown"
+      },
+      "readiness": {
+        "httpStatus": null,
+        "requestId": null,
+        "durationMs": 3,
+        "error": "NETWORK_ERROR",
+        "status": "unknown"
+      }
+    },
+    "bff-invalid": {
+      "checkedAt": "2026-11-25T08:52:26.915Z",
+      "overallStatus": "unknown",
+      "backend": {
+        "httpStatus": 200,
+        "requestId": null,
+        "durationMs": 6,
+        "error": "INVALID_RESPONSE",
+        "status": "unknown"
+      },
+      "database": {
+        "status": "unknown"
+      },
+      "readiness": {
+        "httpStatus": 200,
+        "requestId": null,
+        "durationMs": 6,
+        "error": "INVALID_RESPONSE",
+        "status": "unknown"
+      }
+    },
+    "bff-http-status": {
+      "checkedAt": "2026-11-25T08:52:47.995Z",
+      "overallStatus": "unknown",
+      "backend": {
+        "httpStatus": 502,
+        "requestId": null,
+        "durationMs": 7,
+        "error": "HTTP_ERROR",
+        "status": "unknown"
+      },
+      "database": {
+        "status": "unknown"
+      },
+      "readiness": {
+        "httpStatus": 502,
+        "requestId": null,
+        "durationMs": 6,
+        "error": "HTTP_ERROR",
+        "status": "unknown"
+      }
+    },
+    "bff-timeout": {
+      "checkedAt": "2026-11-25T08:53:02.296Z",
+      "overallStatus": "unavailable",
+      "backend": {
+        "httpStatus": null,
+        "requestId": null,
+        "durationMs": 8003,
+        "error": "TIMEOUT",
+        "status": "unavailable"
+      },
+      "database": {
+        "status": "unknown"
+      },
+      "readiness": {
+        "httpStatus": null,
+        "requestId": null,
+        "durationMs": 8002,
+        "error": "TIMEOUT",
+        "status": "unknown"
+      }
+    }
+  },
+  "browser": {
+    "api-recovery": {
+      "state": "operational",
+      "label": "api-recovery",
+      "checkedAt": "2026-11-25T08:51:46.15Z",
+      "layouts": [
+        [
+          1440,
+          1440,
+          4,
+          4
+        ],
+        [
+          768,
+          768,
+          4,
+          2
+        ],
+        [
+          375,
+          375,
+          4,
+          1
+        ]
+      ],
+      "focus": [
+        "solid",
+        "none"
+      ],
+      "refreshRequests": 1,
+      "assets": 11,
+      "errors": [],
+      "version": "158.0.4370.33",
+      "backend": {
+        "httpStatus": 200,
+        "requestId": "4ae7f19b-e60d-41be-91f2-8628fea2f602",
+        "durationMs": 2,
+        "error": null,
+        "status": "operational"
+      },
+      "readiness": {
+        "httpStatus": 200,
+        "requestId": "3efa7a38-b0fc-40ae-bf9c-daa6088eb889",
+        "durationMs": 5,
+        "error": null,
+        "status": "operational"
+      }
+    },
+    "db-recovery": {
+      "state": "operational",
+      "label": "db-recovery",
+      "checkedAt": "2026-11-25T08:51:05.597Z",
+      "layouts": [
+        [
+          1440,
+          1440,
+          4,
+          4
+        ],
+        [
+          768,
+          768,
+          4,
+          2
+        ],
+        [
+          375,
+          375,
+          4,
+          1
+        ]
+      ],
+      "focus": [
+        "solid",
+        "none"
+      ],
+      "refreshRequests": 1,
+      "assets": 11,
+      "errors": [],
+      "version": "158.0.4370.33",
+      "backend": {
+        "httpStatus": 200,
+        "requestId": "b9586745-352c-45ce-961f-6ddeb0a890dc",
+        "durationMs": 4,
+        "error": null,
+        "status": "operational"
+      },
+      "readiness": {
+        "httpStatus": 200,
+        "requestId": "68bff129-b42f-4af4-bfca-0cdf123ea58d",
+        "durationMs": 9,
+        "error": null,
+        "status": "operational"
+      }
+    },
+    "degraded": {
+      "state": "degraded",
+      "label": "degraded",
+      "checkedAt": "2026-11-25T08:50:50.532Z",
+      "layouts": [
+        [
+          1440,
+          1440,
+          4,
+          4
+        ],
+        [
+          768,
+          768,
+          4,
+          2
+        ],
+        [
+          375,
+          375,
+          4,
+          1
+        ]
+      ],
+      "focus": [
+        "solid",
+        "none"
+      ],
+      "refreshRequests": 1,
+      "assets": 11,
+      "errors": [],
+      "version": "158.0.4370.33",
+      "backend": {
+        "httpStatus": 200,
+        "requestId": "8f2f2a2b-140c-493b-a363-71db63bff99e",
+        "durationMs": 8,
+        "error": null,
+        "status": "operational"
+      },
+      "readiness": {
+        "httpStatus": 503,
+        "requestId": "04faf311-da3b-46b1-9c2d-33319e9edb50",
+        "durationMs": 4008,
+        "error": null,
+        "status": "degraded"
+      }
+    },
+    "operational": {
+      "state": "operational",
+      "label": "operational",
+      "checkedAt": "2026-11-25T08:49:43.403Z",
+      "layouts": [
+        [
+          1440,
+          1440,
+          4,
+          4
+        ],
+        [
+          768,
+          768,
+          4,
+          2
+        ],
+        [
+          375,
+          375,
+          4,
+          1
+        ]
+      ],
+      "focus": [
+        "solid",
+        "none"
+      ],
+      "refreshRequests": 1,
+      "assets": 11,
+      "errors": [],
+      "version": "158.0.4370.33",
+      "backend": {
+        "httpStatus": 200,
+        "requestId": "e35cbf3b-b2d1-4bd0-81f6-247c55609fdc",
+        "durationMs": 4,
+        "error": null,
+        "status": "operational"
+      },
+      "readiness": {
+        "httpStatus": 200,
+        "requestId": "b3f34343-2858-4357-a75b-5d697d242cae",
+        "durationMs": 7,
+        "error": null,
+        "status": "operational"
+      }
+    },
+    "unavailable": {
+      "state": "unavailable",
+      "label": "unavailable",
+      "checkedAt": "2026-11-25T08:51:20.668Z",
+      "layouts": [
+        [
+          1440,
+          1440,
+          4,
+          4
+        ],
+        [
+          768,
+          768,
+          4,
+          2
+        ],
+        [
+          375,
+          375,
+          4,
+          1
+        ]
+      ],
+      "focus": [
+        "solid",
+        "none"
+      ],
+      "refreshRequests": 1,
+      "assets": 11,
+      "errors": [],
+      "version": "158.0.4370.33",
+      "backend": {
+        "httpStatus": null,
+        "requestId": null,
+        "durationMs": 4,
+        "error": "NETWORK_ERROR",
+        "status": "unavailable"
+      },
+      "readiness": {
+        "httpStatus": null,
+        "requestId": null,
+        "durationMs": 3,
+        "error": "NETWORK_ERROR",
+        "status": "unknown"
+      }
+    }
+  },
+  "browserLayoutTuple": [
+    "viewport",
+    "documentWidth",
+    "cards",
+    "columns"
+  ],
+  "persistence": {
+    "before": {
+      "db": "f9051957bc7dda76429a103ccd564e242ac20c501b11bc4f714433fca67c476c 2026-11-25T08:50:51.403426059Z",
+      "n8n": "e48793f2df3174169cc8ad4409fd1bd49fc8dad7fbddb3dfe098d2fd9fb8d037 2026-11-25T08:52:01.1436886Z"
+    },
+    "after": {
+      "db": "9d0199200444b22d1f66b4ba5ca51750a4ec2cc0e130ae6416bdc08a9fbd6ed2 2026-11-25T08:54:31.665873506Z",
+      "n8n": "3099a9a578a021fae382f9ce668d8a7b87bd1f3d2d4bbe2dc1cdd837285e035a 2026-11-25T08:54:31.659847215Z"
+    },
+    "systemId": "7712026996257427494",
+    "revision": "0001",
+    "historyBefore": [
+      {
+        "id": 1,
+        "status": "success",
+        "mode": "cli"
+      },
+      {
+        "id": 2,
+        "status": "success",
+        "mode": "cli"
+      },
+      {
+        "id": 3,
+        "status": "success",
+        "mode": "cli"
+      },
+      {
+        "id": 4,
+        "status": "success",
+        "mode": "cli"
+      },
+      {
+        "id": 5,
+        "status": "success",
+        "mode": "cli"
+      },
+      {
+        "id": 6,
+        "status": "success",
+        "mode": "cli"
+      },
+      {
+        "id": 7,
+        "status": "success",
+        "mode": "cli"
+      },
+      {
+        "id": 8,
+        "status": "success",
+        "mode": "cli"
+      },
+      {
+        "id": 9,
+        "status": "success",
+        "mode": "cli"
+      },
+      {
+        "id": 10,
+        "status": "success",
+        "mode": "cli"
+      },
+      {
+        "id": 11,
+        "status": "success",
+        "mode": "cli"
+      }
+    ],
+    "historyAfter": [
+      {
+        "id": 1,
+        "status": "success",
+        "mode": "cli"
+      },
+      {
+        "id": 2,
+        "status": "success",
+        "mode": "cli"
+      },
+      {
+        "id": 3,
+        "status": "success",
+        "mode": "cli"
+      },
+      {
+        "id": 4,
+        "status": "success",
+        "mode": "cli"
+      },
+      {
+        "id": 5,
+        "status": "success",
+        "mode": "cli"
+      },
+      {
+        "id": 6,
+        "status": "success",
+        "mode": "cli"
+      },
+      {
+        "id": 7,
+        "status": "success",
+        "mode": "cli"
+      },
+      {
+        "id": 8,
+        "status": "success",
+        "mode": "cli"
+      },
+      {
+        "id": 9,
+        "status": "success",
+        "mode": "cli"
+      },
+      {
+        "id": 10,
+        "status": "success",
+        "mode": "cli"
+      },
+      {
+        "id": 11,
+        "status": "success",
+        "mode": "cli"
+      },
+      {
+        "id": 12,
+        "status": "success",
+        "mode": "cli"
+      },
+      {
+        "id": 13,
+        "status": "success",
+        "mode": "cli"
+      }
+    ],
+    "sameMarker": true,
+    "volumes": [
+      "dealmind-acceptance-b79724bc3_postgres_data",
+      "dealmind-acceptance-b79724bc3_n8n_data"
+    ]
+  },
+  "cleanup": {
+    "containersRemaining": 0,
+    "retainedVolumes": [
+      "dealmind-acceptance-b79724bc3_n8n_data",
+      "dealmind-acceptance-b79724bc3_postgres_data"
+    ],
+    "mainVolumes": [
+      "dealmind_n8n_data",
+      "dealmind_postgres_data"
+    ],
+    "mainContainers": {
+      "dealmind-api-1": "9539913b99db902708ebda3ef36e59f51ab30f80bf64cc66b2872abcf17aa3ff 2026-11-25T08:14:38.041072134Z",
+      "dealmind-db-1": "d5df6fbbd777da917fabfe126eed2fecbd1c473e50a007e7de859c6376ebe560 2026-11-25T08:14:38.076145975Z",
+      "dealmind-web-1": "19fec6885eadbb0718072470ea9cd9d20eb3491e0a4a972680b387b0400cebb5 2026-11-25T08:14:38.044668601Z",
+      "dealmind-n8n-1": "3e7490bc57cd3df74bc2db69cd1699613f5235612d2afeed70017e6c8c137232 2026-11-25T08:14:38.069228411Z"
+    },
+    "mainHealth": [
+      "dealmind-web-1|19fec6885ead|Up 5 hours (healthy)",
+      "dealmind-api-1|9539913b99db|Up 5 hours (healthy)",
+      "dealmind-db-1|d5df6fbbd777|Up 5 hours (healthy)",
+      "dealmind-n8n-1|3e7490bc57cd|Up 5 hours (healthy)"
+    ],
+    "dbTest": "exited"
+  }
+}

@@ -1,0 +1,12 @@
+**
+!package.json
+!package-lock.json
+!next.config.ts
+!tsconfig.json
+!postcss.config.mjs
+!scripts/
+!scripts/stage-assets.mjs
+!public/
+!public/**
+!src/
+!src/**

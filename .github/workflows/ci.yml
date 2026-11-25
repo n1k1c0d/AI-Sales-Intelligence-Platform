@@ -1,0 +1,218 @@
+name: DealMind CI
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  repository-checks:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Check repository files and links
+        run: python3 scripts/check_repository.py
+      - name: Validate Compose template
+        env:
+          POSTGRES_PASSWORD: ci-config-validation-only
+          N8N_ENCRYPTION_KEY: ci-config-validation-only
+        run: docker compose --env-file .env.example config --quiet
+      - name: Check workflow syntax with actionlint 1.7.12
+        run: |
+          file="$RUNNER_TEMP/actionlint.tar.gz"
+          curl --fail --silent --show-error --location --max-time 60 --output "$file" \
+            https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz
+          echo "8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8  $file" | sha256sum --check
+          tar xzf "$file" -C "$RUNNER_TEMP" actionlint
+          "$RUNNER_TEMP/actionlint" .github/workflows/ci.yml
+
+  backend-quality:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: apps/api
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d # v10.4.0
+        with:
+          version: "0.11.0"
+          python-version: "3.12"
+          enable-cache: true
+          cache-dependency-glob: apps/api/uv.lock
+      - run: uv sync --locked
+      - run: uv run --locked ruff check .
+      - run: uv run --locked ruff format --check .
+      - run: uv run --locked mypy
+      - name: Run tests and measure coverage
+        run: |
+          uv run --locked pytest -m "not database" --junitxml=reports/backend-junit.xml \
+            --cov=dealmind --cov-report=term-missing --cov-report=xml:reports/backend-coverage.xml
+          python3 ../../scripts/check_junit.py reports/backend-junit.xml
+      - name: Build and inspect Python distributions
+        run: |
+          uv build --out-dir "$RUNNER_TEMP/dist"
+          python3 ../../scripts/check_package.py "$RUNNER_TEMP/dist"
+      - name: Upload backend-reports
+        if: ${{ always() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: backend-reports
+          path: |
+            apps/api/reports/backend-junit.xml
+            apps/api/reports/backend-coverage.xml
+          if-no-files-found: warn
+          retention-days: 7
+
+  database-integration:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d # v10.4.0
+        with:
+          version: "0.11.0"
+          python-version: "3.12"
+          enable-cache: true
+          cache-dependency-glob: apps/api/uv.lock
+      - run: uv sync --locked
+        working-directory: apps/api
+      - name: Start isolated PostgreSQL with pgvector
+        run: docker compose -p dealmind-db-test -f infra/docker/postgres/compose.test.yml up -d --wait --wait-timeout 90
+      - name: Verify migrations, transactions, timeout and recovery
+        working-directory: apps/api
+        run: |
+          uv run --locked pytest -m database --junitxml=reports/database-junit.xml
+          python3 ../../scripts/check_junit.py --database reports/database-junit.xml
+      - name: Stop the database test project
+        if: ${{ always() }}
+        run: docker compose -p dealmind-db-test -f infra/docker/postgres/compose.test.yml down
+      - name: Upload database-report
+        if: ${{ always() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: database-report
+          path: |
+            apps/api/reports/database-junit.xml
+          if-no-files-found: warn
+          retention-days: 7
+
+  frontend-quality:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: apps/web
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: apps/web/.nvmrc
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - name: Run Vitest and verify report
+        run: |
+          npm test -- --reporter=default --reporter=junit --outputFile.junit=reports/frontend-junit.xml
+          python3 ../../scripts/check_junit.py reports/frontend-junit.xml
+      - name: Build without a backend
+        env:
+          API_BASE_URL: http://127.0.0.1:1
+        run: npm run build
+      - name: Upload frontend-report
+        if: ${{ always() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: frontend-report
+          path: |
+            apps/web/reports/frontend-junit.xml
+          if-no-files-found: warn
+          retention-days: 7
+
+  n8n-validation:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - run: python3 scripts/validate_n8n_workflow.py
+      - run: python3 -m unittest discover -s scripts/tests -v
+      - name: Build isolated stack and verify n8n
+        run: python3 scripts/ci_stack.py n8n
+      - name: Clean up this runner's test project
+        if: ${{ always() }}
+        run: python3 scripts/ci_stack.py n8n --cleanup
+      - name: Upload n8n-report
+        if: ${{ always() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: n8n-report
+          path: |
+            reports/n8n.json
+          if-no-files-found: warn
+          retention-days: 7
+
+  docker-smoke:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Build isolated stack and verify smoke
+        run: python3 scripts/ci_stack.py smoke
+      - name: Clean up this runner's test project
+        if: ${{ always() }}
+        run: python3 scripts/ci_stack.py smoke --cleanup
+      - name: Upload smoke-report
+        if: ${{ always() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: smoke-report
+          path: |
+            reports/smoke.json
+          if-no-files-found: warn
+          retention-days: 7
+
+  ci-gate:
+    name: CI Gate
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    if: ${{ always() }}
+    needs: [repository-checks, backend-quality, database-integration, frontend-quality, n8n-validation, docker-smoke]
+    steps:
+      - name: Require success from every job
+        shell: python
+        env:
+          RESULTS: ${{ toJSON(needs) }}
+        run: |
+          import json
+          import os
+          import sys
+          results = {job: info["result"] for job, info in json.loads(os.environ["RESULTS"]).items()}
+          for job, result in sorted(results.items()):
+              print(f"{job}: {result}")
+          sys.exit(0 if len(results) == 6 and all(value == "success" for value in results.values()) else 1)

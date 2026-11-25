@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0",
+  "workflow": "system-health-check",
+  "workflow_version": "1.0.0",
+  "execution_id": "1",
+  "started_at": "2026-11-24T17:59:30.016Z",
+  "finished_at": "2026-11-24T17:59:30.928Z",
+  "duration_ms": 912,
+  "overall_status": "operational",
+  "services": {
+    "backend": {
+      "status": "operational",
+      "http_status": 200,
+      "request_id": "49638490-71ed-4e7a-a589-dc7a60ab019e"
+    },
+    "readiness": {
+      "status": "operational",
+      "http_status": 200,
+      "request_id": "629b8220-f0d2-49bc-ae39-0107ee7f2cea"
+    },
+    "database": {
+      "status": "operational"
+    }
+  },
+  "errors": []
+}

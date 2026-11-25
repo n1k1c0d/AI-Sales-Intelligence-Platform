@@ -1,0 +1,407 @@
+{
+  "name": "DealMind — System Health Check",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "4762372a-8d87-4296-b876-000000000001",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4762372a-8d87-4296-b876-000000000002",
+              "name": "workflow",
+              "value": "system-health-check",
+              "type": "string"
+            },
+            {
+              "id": "4762372a-8d87-4296-b876-000000000003",
+              "name": "workflow_version",
+              "value": "1.0.0",
+              "type": "string"
+            },
+            {
+              "id": "4762372a-8d87-4296-b876-000000000004",
+              "name": "execution_id",
+              "value": "={{ String($execution.id) }}",
+              "type": "string"
+            },
+            {
+              "id": "4762372a-8d87-4296-b876-000000000005",
+              "name": "started_at",
+              "value": "={{ $now.toUTC().toISO() }}",
+              "type": "string"
+            },
+            {
+              "id": "4762372a-8d87-4296-b876-000000000006",
+              "name": "api_base_url",
+              "value": "http://api:8000",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "4762372a-8d87-4296-b876-000000000007",
+      "name": "Initialize Context",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        240,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "expression",
+        "numberOutputs": 2,
+        "output": "={{ /^https?:\\/\\/[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?(?::[1-9]\\d{0,4})?$/i.test($json.api_base_url) && (!$json.api_base_url.match(/:(\\d+)$/) || Number($json.api_base_url.match(/:(\\d+)$/)[1]) <= 65535) ? 0 : 1 }}"
+      },
+      "id": "4762372a-8d87-4296-b876-000000000008",
+      "name": "Validate API Origin",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.5,
+      "position": [
+        490,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $('Initialize Context').first().json.api_base_url + '/api/v1/health' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {
+              "followRedirects": false
+            }
+          },
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true,
+              "responseFormat": "text",
+              "outputPropertyName": "body"
+            }
+          },
+          "timeout": 8000
+        }
+      },
+      "id": "4762372a-8d87-4296-b876-000000000009",
+      "name": "Check API Health",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        736,
+        -96
+      ],
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1000,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $('Initialize Context').first().json.api_base_url + '/api/v1/ready' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {
+              "followRedirects": false
+            }
+          },
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true,
+              "responseFormat": "text",
+              "outputPropertyName": "body"
+            }
+          },
+          "timeout": 8000
+        }
+      },
+      "id": "4762372a-8d87-4296-b876-00000000000a",
+      "name": "Check API Readiness",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        980,
+        -96
+      ],
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1000,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// HTTP Request returns text so malformed JSON retains its HTTP status.\nfunction normalize(raw, kind) {\n  const readiness = kind === 'readiness';\n  const result = {\n    status: 'unknown', http_status: null, request_id: null, error_code: null,\n  };\n  if (readiness) result.checks = { application: 'unknown', database: 'unknown' };\n  function fail(code) {\n    result.error_code = code;\n    return result;\n  }\n\n  if (raw === null) return fail('CONFIGURATION_ERROR');\n  if (raw.error) {\n    const error = raw.error;\n    const hint = [error.code, error.cause?.code, error.message, error.description,\n      raw.details?.errorCode, typeof error === 'string' ? error : ''].join(' ');\n    if (/timed?\\s*out|timeout|ETIMEDOUT|ECONNABORTED/i.test(hint)) return fail('TIMEOUT');\n    if (/ECONNREFUSED|ECONNRESET|ENOTFOUND|EAI_AGAIN|ENETUNREACH|EHOSTUNREACH|socket hang up|connect|dns|offline/i.test(hint)) {\n      if (!readiness) result.status = 'unavailable';\n      return fail('NETWORK_ERROR');\n    }\n    // A new integration/programming error must be visible in execution history.\n    throw new Error('Unrecognized HTTP Request failure');\n  }\n\n  if (!Number.isInteger(raw.statusCode)) throw new Error('Missing HTTP node status');\n  result.http_status = raw.statusCode;\n  const header = (name) => Object.entries(raw.headers ?? {})\n    .find(([key]) => key.toLowerCase() === name)?.[1];\n  const identifier = header('x-request-id');\n  if (typeof identifier === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(identifier)) {\n    result.request_id = identifier;\n  }\n  if (raw.statusCode !== 200 && !(readiness && raw.statusCode === 503)) return fail('HTTP_ERROR');\n  if (String(header('content-type')).split(';')[0].trim().toLowerCase() !== 'application/json') return fail('INVALID_RESPONSE');\n  let body;\n  try { body = JSON.parse(raw.body); } catch { return fail('INVALID_RESPONSE'); }\n  if (!readiness) {\n    if (body?.status !== 'ok' || body.service !== 'dealmind-api') return fail('INVALID_RESPONSE');\n    result.status = 'operational';\n    return result;\n  }\n\n  const app = body?.checks?.application;\n  const db = body?.checks?.database;\n  if (raw.statusCode === 200 && body?.status === 'ready' && app === 'ok' && db === 'ok') {\n    result.status = 'operational';\n    result.checks = { application: app, database: db };\n    return result;\n  }\n  if (raw.statusCode === 503 && body?.status === 'not_ready' && db === 'not_ready' && ['ok','not_ready'].includes(app)) {\n    result.status = 'degraded';\n    result.checks = { application: app, database: app === 'ok' ? db : 'unknown' };\n    return fail(app === 'ok' ? 'DATABASE_NOT_READY' : 'APPLICATION_NOT_READY');\n  }\n  return fail('INVALID_RESPONSE');\n}\n\nfunction probe(name) {\n  if (!$(name).isExecuted) return null;\n  const items = $(name).all();\n  if (items.length !== 1) throw new Error('Expected one HTTP result');\n  return items[0].json;\n}\nreturn [{ json: {\n  health: normalize(probe('Check API Health'), 'health'),\n  ready: normalize(probe('Check API Readiness'), 'readiness'),\n} }];"
+      },
+      "id": "4762372a-8d87-4296-b876-00000000000b",
+      "name": "Normalize Responses",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1232,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const context = $('Initialize Context').first().json;\nconst { health, ready } = $input.first().json;\nconst transportFailed = probe => ['NETWORK_ERROR','TIMEOUT'].includes(probe.error_code);\nconst readinessKnown = ['operational','degraded'].includes(ready.status);\nlet overall = 'unknown';\nif (health.status === 'operational' && ready.status === 'operational') overall = 'operational';\nelse if (health.status === 'operational' || readinessKnown) overall = 'degraded';\nelse if (transportFailed(health) && transportFailed(ready)) overall = 'unavailable';\n\nconst messages = {\n  NETWORK_ERROR: 'Could not connect to the API', TIMEOUT: 'API request timed out',\n  HTTP_ERROR: 'Unexpected HTTP status', INVALID_RESPONSE: 'Response did not match the API contract',\n  DATABASE_NOT_READY: 'Database readiness check failed', APPLICATION_NOT_READY: 'Application lifecycle is not ready',\n  CONFIGURATION_ERROR: 'Invalid API origin',\n};\nconst errors = [];\nfor (const [source, probe] of [['health', health], ['readiness', ready]]) {\n  if (probe.error_code) errors.push({ code: probe.error_code, message: messages[probe.error_code], source });\n}\nconst endpoint = ({ status, http_status, request_id }) => ({ status, http_status, request_id });\nconst backend = endpoint(health);\nif (health.status !== 'operational') {\n  if (readinessKnown) backend.status = 'degraded';\n  else backend.status = overall === 'unavailable' ? 'unavailable' : 'unknown';\n}\nconst finished = new Date();\nreturn [{ json: {\n  schema_version: '1.0', workflow: context.workflow, workflow_version: context.workflow_version,\n  execution_id: context.execution_id, started_at: context.started_at, finished_at: finished.toISOString(),\n  duration_ms: Math.max(0, finished.getTime() - Date.parse(context.started_at)), overall_status: overall,\n  services: { backend, readiness: endpoint(ready),\n    database: { status: ready.checks.database === 'ok' ? 'operational' : ready.checks.database } },\n  errors,\n} }];"
+      },
+      "id": "4762372a-8d87-4296-b876-00000000000c",
+      "name": "Build System Report",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1480,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "expression",
+        "numberOutputs": 4,
+        "output": "={{ ['operational', 'degraded', 'unavailable', 'unknown'].indexOf($json.overall_status) }}"
+      },
+      "id": "4762372a-8d87-4296-b876-00000000000d",
+      "name": "Route By Status",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.5,
+      "position": [
+        1720,
+        0
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "4762372a-8d87-4296-b876-00000000000e",
+      "name": "Operational Result",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1980,
+        -264
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "4762372a-8d87-4296-b876-00000000000f",
+      "name": "Degraded Result",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1980,
+        -88
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "4762372a-8d87-4296-b876-000000000010",
+      "name": "Unavailable Result",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1980,
+        88
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "4762372a-8d87-4296-b876-000000000011",
+      "name": "Unknown Result",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1980,
+        264
+      ]
+    },
+    {
+      "parameters": {
+        "content": "### FastAPI diagnostics\nTwo read-only probes. Each transport failure gets one retry after 1 s. HTTP responses go straight to validation.",
+        "width": 480,
+        "height": 176,
+        "color": 5
+      },
+      "id": "4762372a-8d87-4296-b876-000000000012",
+      "name": "Transport policy",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        677,
+        -332
+      ]
+    },
+    {
+      "parameters": {
+        "content": "### One report per execution\nA readiness 503 is a valid diagnostic result. Use the two request IDs to find the corresponding FastAPI logs.",
+        "width": 480,
+        "height": 176,
+        "color": 4
+      },
+      "id": "4762372a-8d87-4296-b876-000000000013",
+      "name": "Diagnostic outcome",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1212,
+        -332
+      ]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Initialize Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Initialize Context": {
+      "main": [
+        [
+          {
+            "node": "Validate API Origin",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate API Origin": {
+      "main": [
+        [
+          {
+            "node": "Check API Health",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Normalize Responses",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check API Health": {
+      "main": [
+        [
+          {
+            "node": "Check API Readiness",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check API Readiness": {
+      "main": [
+        [
+          {
+            "node": "Normalize Responses",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Responses": {
+      "main": [
+        [
+          {
+            "node": "Build System Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build System Report": {
+      "main": [
+        [
+          {
+            "node": "Route By Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route By Status": {
+      "main": [
+        [
+          {
+            "node": "Operational Result",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Degraded Result",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Unavailable Result",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Unknown Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "executionTimeout": 60,
+    "saveManualExecutions": true,
+    "saveDataSuccessExecution": "all",
+    "saveDataErrorExecution": "all"
+  }
+}

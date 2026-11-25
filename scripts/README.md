@@ -1,0 +1,33 @@
+# DealMind · Вспомогательные скрипты
+
+## Проверка локального Docker-окружения
+
+Из корня репозитория запустите `bash scripts/smoke_infra.sh` после `docker compose up -d --build --wait`. Нужны Bash, curl и доступ к Docker Compose. В Windows можно использовать Git Bash или WSL с интеграцией Docker Desktop.
+
+Скрипт сам определяет порты Compose, проверяет health и readiness API, Swagger и OpenAPI, SQL и расстояние pgvector, интерфейс n8n и запрос из n8n к API. Проверки только читают данные и завершаются кодом 0 при успехе. При первой ошибке скрипт возвращает ненулевой код. [Настройка и диагностика](../infra/docker/README.md)
+
+## Утилиты DM-010
+
+Запускайте из корня с Python 3.12. Код 0 означает успешную проверку, любое нарушение контракта даёт ненулевой код.
+
+| Команда | Вход, результат и побочные эффекты |
+| --- | --- |
+| `python scripts/check_repository.py` | Читает индекс Git и новые файлы, которые попадут в Git. Проверяет структуру, Markdown-ссылки, JSON и следы конфликтов. |
+| `python scripts/check_junit.py [--database] REPORT.xml` | Читает JUnit, печатает количество выполненных, ошибок и пропусков. С флагом проверяет наличие четырёх обязательных тестов БД. |
+| `python scripts/check_package.py apps/api/dist` | Читает каталог с одной парой wheel/sdist и сверяет файлы пакета с исходниками, включая `py.typed`. |
+| `python scripts/validate_n8n_workflow.py [workflow.json]` | Проверяет переносимый workflow и четыре эталонных отчёта. Негативные fixtures запускает `python -m unittest discover -s scripts/tests -v`. |
+| `python scripts/ci_stack.py n8n` | Создаёт выделенный Compose-проект, сверяет импорт и исполняет все четыре диагностические ветки. Результат в `reports/n8n.json`. |
+| `python scripts/ci_stack.py smoke` | Собирает и запускает выделенный стек, вызывает `smoke_infra.sh`. Результат в `reports/smoke.json`. |
+| `bash scripts/smoke_infra.sh [COMPOSE_OPTIONS...]` | Читает состояние уже запущенного стека. Принимает параметры Compose, например `-p` и `-f`. |
+
+Для стека нужны Docker Compose 2.24.4+ с Linux-контейнерами, Bash и curl. На Windows подходят Docker Desktop и Git Bash или WSL. Каждый локальный запуск получает уникальное имя. Отчёт режима перезаписывается, тестовые тома сохраняются. Параметр `--cleanup` предназначен для повторной очистки на runner конкретной попытки GitHub Actions. [Топология](../infra/docker/README.md)
+
+`scripts/tests/test_workflow_validator.py` создаёт синтетические временные fixtures и проверяет CLI в отдельном процессе. Запустите из корня `python -m unittest discover -s scripts/tests -v`. Для `check_repository.py` нужен Git checkout, проверяются пути относительных Markdown-ссылок. Для `check_package.py` сначала выполните `uv build` из `apps/api`. Локальный smoke читает уже запущенный полный стек; режимы ci_stack создают новый тестовый проект при каждом повторе. [Когда выбирать каждый уровень](../docs/TEST_STRATEGY.md)
+
+## Проверка экспорта n8n
+
+Из корня запустите `python scripts/validate_n8n_workflow.py` с Python 3.12. Скрипт читает граф System Health Check и четыре примера из `automations/n8n`, проверяет ссылки между узлами, фиксированные назначения, повторы и контракт выходного item. При успехе он печатает PASS и возвращает 0. Для этой статической проверки Docker не требуется. [Проверка реального исполнения](../automations/n8n/workflows/system-health-check.md#14-testing)
+
+Для каждого скрипта рядом с командой запуска описываются входные параметры, рабочий каталог, результат и код возврата при ошибке. Для операций записи нужно указать, какие файлы или записи изменятся и что произойдёт при повторном запуске. Учётные данные передаются через окружение.
+
+Скрипт может вызвать существующий загрузчик или сервис backend. Определения KPI, правила риска и разрешения на внешние действия принадлежат соответствующим доменным модулям. [Границы backend](../docs/ARCHITECTURE.md)
