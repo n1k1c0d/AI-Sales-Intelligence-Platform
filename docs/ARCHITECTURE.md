@@ -1,5 +1,20 @@
 # DealMind · Architecture
 
+## CI Architecture
+
+GitHub Actions запускает шесть независимых jobs на отдельных Linux runners. Push в `dev` и `main`, PR в `main` или ручной запуск создают новый прогон. При повторном событии для той же ссылки workflow отменяет устаревший прогон. [Конфигурация CI](../.github/workflows/ci.yml)
+
+| Граница | Что подтверждает проверка |
+| --- | --- |
+| Quality Gates | Repo hygiene и actionlint, Ruff и Mypy, тесты приложений, сборки Python и Next.js. Итоговый CI Gate принимает шесть успешных результатов. |
+| Test Isolation | Для PostgreSQL используется проект DM-007. Smoke и n8n получают свои порты, тома, сеть и временные настройки. |
+| Migration Verification | Отдельная БД проходит upgrade, повторный upgrade, сравнение current с head, проверку Alembic, downgrade и повторную установку. |
+| Workflow Validation | После статической проверки CLI импортирует и экспортирует граф и исполняет его на здоровом и деградировавшем стеке. |
+| Infrastructure Smoke Testing | API и web собираются из тех же Dockerfiles, что и локально. HTTP, SQL, pgvector и Docker DNS проверяются живыми запросами. |
+| Future Deployment Pipeline | Публикация образов, релизы и выкладка относятся к последующим этапам. |
+
+Результаты тестов привязаны к исполнению workflow. Отчёты хранятся семь дней. После первого успешного прогона владелец может открыть Settings → Rules → Rulesets, выбрать правило для `main`, включить Require status checks to pass и добавить `CI Gate` из GitHub Actions. Доступность настройки зависит от тарифа и прав администратора. [Стратегия тестирования](TEST_STRATEGY.md) · [Защищённые ветки GitHub](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches)
+
 ## 1. Обзор архитектуры
 
 Документ задаёт целевую архитектуру MVP. На момент DM-001 в репозитории есть каркас и документы. Контрольный сценарий для проектирования — от первого признака задержки в открытой сделке до проверяемого результата действия, подтверждённого менеджером. [Контекст продукта](PROJECT_CONTEXT.md)

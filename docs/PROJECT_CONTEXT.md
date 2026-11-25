@@ -85,6 +85,8 @@ DM-009 добавила ручной workflow n8n System Health Check. Он чи
 
 Прикладные таблицы, репозитории и CRM API запланированы на следующие этапы. В плане остаются CRM Dashboard, таблица сделок, аналитика продаж, визуализация риска, RAG-интерфейс, AI-рекомендации, аутентификация, production deployment и бизнес-процессы n8n. [Порядок задач](ROADMAP.md)
 
+В DM-010 подготовлен GitHub Actions CI. Локально проверены backend и frontend quality gates, миграции Alembic и восстановление PostgreSQL, импорт и исполнение n8n, сборка и HTTP-проверки Docker. Сохраняются отчёты JUnit, coverage и диагностические JSON. Покрытие быстрых backend-тестов составляет 325/343 строк. Первое выполнение workflow на GitHub ожидается. Continuous deployment, production deployment, автоматизация релизов, полная E2E-приёмка, бизнес-аналитика и оценки RAG/AI Agent остаются в roadmap. [Стратегия](TEST_STRATEGY.md) · [Приёмка](tasks/DM-010.md)
+
 ## Ограничения и открытые вопросы
 
 Выбор лицензии остаётся за владельцем проекта. На момент DM-002 файла `LICENSE` нет.

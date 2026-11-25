@@ -1,5 +1,20 @@
 # DealMind · Web UI
 
+## Проверки frontend в CI
+
+Из `apps/web` с Node 24 и npm 11 выполните:
+
+```bash
+npm ci
+npm run lint
+npm run typecheck
+npm test -- --reporter=default --reporter=junit --outputFile.junit=reports/frontend-junit.xml
+python ../../scripts/check_junit.py reports/frontend-junit.xml
+npm run build
+```
+
+TypeScript в строгом режиме проверяет также типы маршрутов Next.js. Vitest запускает тесты нормализации и React-компонентов. CI направляет `API_BASE_URL` на недоступный loopback-порт во время сборки. Фактические запросы к FastAPI проверяются после запуска контейнеров. [Стратегия](../../docs/TEST_STRATEGY.md)
+
 ## 1. Frontend Overview
 
 System Overview на `/` показывает доступность FastAPI, готовность PostgreSQL, общий результат readiness и способность Next.js выдавать диагностику. Для корреляции с журналом API служат два независимых Request ID. [Приёмка и скриншоты](../../docs/tasks/DM-008.md)

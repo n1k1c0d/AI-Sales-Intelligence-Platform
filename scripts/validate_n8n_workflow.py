@@ -1,7 +1,9 @@
 """Validate the portable DM-009 export and its example reports (stdlib only)."""
 
+import argparse
 import json
 import re
+import sys
 from datetime import datetime, timedelta
 from graphlib import TopologicalSorter
 from pathlib import Path
@@ -12,9 +14,13 @@ ROOT = Path(__file__).resolve().parents[1] / "automations" / "n8n"
 STATUSES = ("operational", "degraded", "unavailable", "unknown")
 
 
+class ValidationError(ValueError):
+    """An input-independent diagnostic suitable for CI logs."""
+
+
 def require(condition, message):
     if not condition:
-        raise ValueError(message)
+        raise ValidationError(message)
 
 
 def read(path):
@@ -26,7 +32,7 @@ def validate_workflow(workflow):
     require(not workflow["active"] and not workflow.get("pinData"), "Expected an inactive, unpinned export")
     require("id" not in workflow and "shared" not in workflow, "Remove instance-specific ownership")
     raw = json.dumps(workflow)
-    require(not re.search(r'"(?:credentials|password|authorization|cookie|apiKey)"\s*:|Bearer\s+\S+', raw, re.I), "Review sensitive fields")
+    require(not re.search(r'"(?:credentials|password|authorization|cookie|api[_-]?key|(?:access[_-]?)?token|secret)"\s*:|Bearer\s+\S+', raw, re.I), "Review sensitive fields")
     nodes = {node["name"]: node for node in workflow["nodes"]}
     require(len(nodes) == len(workflow["nodes"]), "Duplicate node name")
     require(len({n["id"] for n in nodes.values()}) == len(nodes), "Duplicate node ID")
@@ -44,12 +50,21 @@ def validate_workflow(workflow):
         require(params["method"] == "GET", "Only GET is supported")
         require(params["url"] == "={{ $('Initialize Context').first().json.api_base_url + '/api/v1/" + path + "' }}", "Unexpected destination")
         require(node["retryOnFail"] and (node["maxTries"], node["waitBetweenTries"]) == (2, 1000), "Retry policy changed")
+        require(params.get("authentication", "none") == "none", "Unexpected HTTP authentication")
+        require(params.get("sendHeaders") and params.get("headerParameters", {}).get("parameters")
+                == [{"name": "Accept", "value": "application/json"}], "Unexpected HTTP headers")
         options = params["options"]
         response = options["response"]["response"]
         require(options["timeout"] == 8000 and not options["redirect"]["redirect"]["followRedirects"], "Unexpected HTTP options")
         require(response["fullResponse"] and response["neverError"] and response["responseFormat"] == "text", "Missing HTTP diagnostic envelope")
     context = nodes["Initialize Context"]["parameters"]["assignments"]["assignments"]
-    require(next(a["value"] for a in context if a["name"] == "api_base_url") == "http://api:8000", "Unexpected origin")
+    expected = {
+        "workflow": "system-health-check", "workflow_version": "1.0.0",
+        "api_base_url": "http://api:8000", "execution_id": "={{ String($execution.id) }}",
+        "started_at": "={{ $now.toUTC().toISO() }}",
+    }
+    require(len(context) == len(expected) and {a["name"]: a["value"] for a in context} == expected,
+            "Unexpected workflow ID, origin or context assignments")
     require(workflow["settings"]["executionTimeout"] == 60, "Unexpected workflow deadline")
     graph = TopologicalSorter()
     visited = {triggers[0]}
@@ -99,7 +114,18 @@ def validate_report(report, expected):
 
 
 if __name__ == "__main__":
-    validate_workflow(read(ROOT / "workflows/system-health-check.json"))
-    for status in STATUSES:
-        validate_report(read(ROOT / "examples" / "system-health-check" / (status + ".json")), status)
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("workflow", nargs="?", type=Path, default=ROOT / "workflows/system-health-check.json")
+    path = parser.parse_args().workflow
+    try:
+        validate_workflow(read(path))
+        for status in STATUSES:
+            path = ROOT / "examples" / "system-health-check" / (status + ".json")
+            validate_report(read(path), status)
+    except ValidationError as error:
+        sys.exit(f"{path}: {error}")
+    except json.JSONDecodeError as error:
+        sys.exit(f"{path}: invalid JSON at line {error.lineno}, column {error.colno}")
+    except (OSError, ValueError, KeyError, TypeError, AttributeError, StopIteration, IndexError):
+        sys.exit(f"{path}: unreadable file or invalid required configuration")
     print("PASS: portable workflow, graph, transport settings and four report examples")

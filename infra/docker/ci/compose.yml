@@ -1,0 +1,29 @@
+# Test stacks publish only ephemeral loopback ports and have independent image tags.
+services:
+  db:
+    ports: !override ["127.0.0.1::5432"]
+  api:
+    image: "${COMPOSE_PROJECT_NAME}-api:ci"
+    ports: !override ["127.0.0.1::8000"]
+  web:
+    image: "${COMPOSE_PROJECT_NAME}-web:ci"
+    ports: !override ["127.0.0.1::3000"]
+  invalid-api:
+    profiles: [invalid-response]
+    image: "${COMPOSE_PROJECT_NAME}-api:ci"
+    pull_policy: never
+    command: ["python", "/fixtures/invalid_api.py"]
+    environment:
+      CI_FIXTURE_PORT: "${CI_FIXTURE_PORT:-8000}"
+    volumes:
+      - ./infra/docker/ci/invalid_api.py:/fixtures/invalid_api.py:ro
+    networks:
+      dealmind-network:
+        aliases: [api]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import os, urllib.request; urllib.request.urlopen('http://127.0.0.1:' + os.environ['CI_FIXTURE_PORT'], timeout=2).close()"]
+      interval: 2s
+      timeout: 3s
+      retries: 10
+  n8n:
+    ports: !override ["127.0.0.1::5678"]

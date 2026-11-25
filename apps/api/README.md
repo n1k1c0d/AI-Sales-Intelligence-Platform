@@ -1,5 +1,31 @@
 # DealMind · Python Backend
 
+## Проверки backend в CI
+
+В каталоге `apps/api` выполните команды с Python 3.12 и uv 0.11.0.
+
+```bash
+uv sync --locked
+uv run --locked ruff check .
+uv run --locked ruff format --check .
+uv run --locked mypy
+uv run --locked pytest -m "not database" --junitxml=reports/backend-junit.xml --cov=dealmind --cov-report=term-missing --cov-report=xml:reports/backend-coverage.xml
+python ../../scripts/check_junit.py reports/backend-junit.xml
+uv build
+python ../../scripts/check_package.py dist
+```
+
+Для PostgreSQL используйте отдельный Compose-проект. Из корня репозитория выполните следующую последовательность. Тест восстановления приостанавливает только контейнер `postgres-test`. При ошибке тестов также выполните команду остановки.
+
+```bash
+docker compose -p dealmind-db-test -f infra/docker/postgres/compose.test.yml up -d --wait --wait-timeout 90
+(cd apps/api && uv run --locked pytest -m database --junitxml=reports/database-junit.xml)
+python scripts/check_junit.py --database apps/api/reports/database-junit.xml
+docker compose -p dealmind-db-test -f infra/docker/postgres/compose.test.yml stop
+```
+
+В Windows используйте Git Bash для команды в скобках или запустите pytest из `apps/api`. Фикстура сверяет владельца тома и идентификатор кластера. Alembic проходит повторный upgrade, downgrade и возврат к head на новой тестовой БД. [Стратегия](../../docs/TEST_STRATEGY.md)
+
 В `apps/api` находится локальный HTTP API DealMind. Установленный пакет `dealmind-api` предоставляет модуль `dealmind`, фабрику FastAPI и ASGI entrypoint `dealmind.main:app`. Версия в OpenAPI берётся из метаданных distribution.
 
 ## Технологии и версия Python

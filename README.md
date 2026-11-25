@@ -2,6 +2,14 @@
 
 DealMind проектируется для отдела продаж онлайн-школы. Менеджер сможет открыть сделку, увидеть причину риска и решить, какое действие предпринять. Руководитель сможет перейти от показателя воронки к сделкам, на которых этот показатель рассчитан.
 
+## Continuous Integration & Quality Assurance
+
+[![DealMind CI](https://github.com/n1k1c0d/AI-Sales-Intelligence-Platform/actions/workflows/ci.yml/badge.svg?branch=dev)](https://github.com/n1k1c0d/AI-Sales-Intelligence-Platform/actions/workflows/ci.yml?query=branch%3Adev)
+
+`DealMind CI` запускается при push в `dev` и `main`, при открытии и обновлении PR в `main`, а также вручную через GitHub Actions. Параллельно проверяются структура репозитория, Python, PostgreSQL с Alembic, frontend, импорт и исполнение n8n, сборка и HTTP-проверки Docker. Итоговый `CI Gate` требует успеха всех шести jobs.
+
+Из корня можно запустить `python scripts/check_repository.py`, `python scripts/ci_stack.py n8n` и `python scripts/ci_stack.py smoke`. Команды для отдельных suites, артефакты и измеренное покрытие приведены в стратегии. Для первого запуска достаточно push в `dev`. Ручной запуск через интерфейс GitHub станет доступен, когда workflow появится в default branch. На этапе DM-010 локальные проверки пройдены, первый результат на GitHub ожидается. [Стратегия и локальные команды](docs/TEST_STRATEGY.md) · [Результаты DM-010](docs/tasks/DM-010.md)
+
 ## Проблема бизнеса
 
 В CRM видны суммы и этапы, но из них трудно понять, кому сегодня нужен звонок и почему. Например, после разговора о рассрочке прошло больше 72 часов, следующего контакта в календаре нет, а условия оплаты изменились. Для решения нужны три разных свидетельства — история контактов, состояние сделки и действующая редакция условий курса.
@@ -11,7 +19,7 @@ DealMind проектируется для отдела продаж онлай�
 | Статус | Что доступно или запланировано |
 | --- | --- |
 | Implemented | Docker Compose запускает Next.js, FastAPI, PostgreSQL 17 с pgvector и n8n. На странице System Overview видны состояние API и БД, время проверки и Request ID. Ручной workflow n8n System Health Check сохраняет один диагностический отчёт на запуск. Доступны Swagger UI, liveness и readiness с проверкой PostgreSQL, единый JSON-контракт ошибок, настройки APP_*, CORS, X-Request-ID, структурированные логи, тесты API и инфраструктурный smoke-тест. |
-| In Progress | Идёт PHASE 0. Следующий этап по roadmap — DM-010, Testing & CI. |
+| In Progress | Идёт PHASE 0. DM-010, Testing & CI, ожидает первого подтверждённого прогона на GitHub. |
 | Planned | API для синтетических CRM-данных, аналитика, Risk Engine, поиск по базе знаний с цитатами, AI Deal Analyst, интерфейс согласования и автоматизации через n8n. |
 
 ## Технологический стек
