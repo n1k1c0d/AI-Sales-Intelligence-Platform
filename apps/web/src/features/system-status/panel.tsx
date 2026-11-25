@@ -15,12 +15,16 @@ import {
   Timer,
 } from "lucide-react";
 import { Button, StatusCard, type DisplayStatus } from "@/components/ui";
+import { MAX_API_REQUEST_TIMEOUT_MS } from "@/lib/config/limits";
 import {
   snapshotSchema,
   type ApiError,
   type DiagnosticEndpoint,
   type SystemStatusResponse,
 } from "./contract";
+
+// Allow both parallel probes their full deadline, plus time to deliver the snapshot.
+const SNAPSHOT_TIMEOUT_MS = MAX_API_REQUEST_TIMEOUT_MS + 5_000;
 
 const messages: Record<ApiError, string> = {
   NETWORK_ERROR: "Connection failed",
@@ -107,37 +111,52 @@ async function readSnapshot(signal: AbortSignal) {
 export function StatusPanel({ projectInfo }: { projectInfo: ReactNode }) {
   const [snapshot, setSnapshot] = useState<SystemStatusResponse | null>(null);
   const [busy, setBusy] = useState(true);
-  const [failed, setFailed] = useState(false);
-  const current = useRef<AbortController | null>(null);
+  const [failure, setFailure] = useState<string | null>(null);
+  const cancelCurrent = useRef<(() => void) | null>(null);
 
   function checkStatus() {
-    if (current.current) return;
+    if (cancelCurrent.current) return;
     const controller = new AbortController();
-    current.current = controller;
-    function finish(result: SystemStatusResponse | null) {
+    const timer = window.setTimeout(() => {
+      finish(null, "Status check timed out");
+      controller.abort();
+    }, SNAPSHOT_TIMEOUT_MS);
+    cancelCurrent.current = () => {
+      window.clearTimeout(timer);
+      controller.abort();
+    };
+
+    function finish(
+      result: SystemStatusResponse | null,
+      error: string | null = null,
+    ) {
       if (controller.signal.aborted) return;
-      current.current = null;
+      window.clearTimeout(timer);
+      cancelCurrent.current = null;
       setSnapshot(result);
-      setFailed(result === null);
+      setFailure(error);
       setBusy(false);
     }
-    void readSnapshot(controller.signal).then(finish, () => finish(null));
+    void readSnapshot(controller.signal).then(
+      (result) => finish(result),
+      () => finish(null, "Status check unavailable"),
+    );
   }
   useEffect(() => {
     checkStatus();
     return () => {
-      current.current?.abort();
-      current.current = null;
+      cancelCurrent.current?.();
+      cancelCurrent.current = null;
     };
   }, []);
 
   function refresh() {
-    if (current.current) return;
+    if (cancelCurrent.current) return;
     setBusy(true);
     checkStatus();
   }
 
-  const fallback: DisplayStatus = failed ? "unknown" : "checking";
+  const fallback: DisplayStatus = failure ? "unknown" : "checking";
   const overall = snapshot?.overallStatus ?? fallback;
   const web: DisplayStatus = snapshot ? "operational" : fallback;
   const backend = snapshot?.backend.status ?? fallback;
@@ -177,9 +196,9 @@ export function StatusPanel({ projectInfo }: { projectInfo: ReactNode }) {
           </div>
           <div>
             <span className="kicker">System status</span>
-            <h2>{failed ? "Status check unavailable" : summary[overall][0]}</h2>
+            <h2>{failure ?? summary[overall][0]}</h2>
             <p>
-              {failed
+              {failure
                 ? "The web app could not retrieve diagnostics. Refresh to try again."
                 : summary[overall][1]}
             </p>
@@ -203,7 +222,7 @@ export function StatusPanel({ projectInfo }: { projectInfo: ReactNode }) {
       <section aria-labelledby="services-title" className="services">
         <div className="section-title">
           <h2 id="services-title">Service health</h2>
-          <span className="count">4 services</span>
+          <span className="count">4 checks</span>
         </div>
         <div className="cards">
           <StatusCard

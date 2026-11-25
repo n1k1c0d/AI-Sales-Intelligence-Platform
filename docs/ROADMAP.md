@@ -6,7 +6,7 @@ Roadmap описывает путь от каркаса репозитория �
 
 **Приоритеты.** P0 — необходим для фундамента или целостности данных и операций, P1 — основной результат этапа, P2 — оформление или расширение. Номер задачи сохраняется при уточнении приоритета или зависимостей.
 
-**Текущая позиция.** PHASE 0 — TECHNICALLY ACCEPTED. DM-001…DM-012 — DONE. DM-101 — READY к планированию после независимой проверки. Implementation requires owner approval after external Phase 0 review. [Протокол DM-012](acceptance/PHASE_0_ACCEPTANCE.md)
+**Текущая позиция.** PHASE 0 — TECHNICALLY ACCEPTED. DM-001…DM-012 — DONE. DM-012.1 проверена локально и готова к публикации. DM-101 — READY к планированию. Реализация ожидает CI исправлений и решения владельца. [Внешнее ревью](acceptance/PHASE_0_EXTERNAL_REVIEW.md). Implementation requires owner approval after external Phase 0 review. [Протокол DM-012](acceptance/PHASE_0_ACCEPTANCE.md)
 
 ## PHASE 0 — Project Foundation
 

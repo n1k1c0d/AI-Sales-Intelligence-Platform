@@ -15,7 +15,7 @@ docs/PROJECT_CONTEXT.md docs/ARCHITECTURE.md docs/ROADMAP.md docs/TEST_STRATEGY.
 """.split()
 RUNTIME = {".venv", "node_modules", ".next", ".n8n", "__pycache__", ".pytest_cache",
            ".mypy_cache", ".ruff_cache", ".turbo", "dist", "build", "reports", "coverage", "htmlcov",
-           "n8n_data", "postgres_data", ".cache", ".tox", "out", "venv"}
+           "n8n_data", "postgres_data", ".cache", ".tox", "out", "venv", "tmp", "temp"}
 MARKER = re.compile(r"^(?:<{7} |={7}$|>{7} )", re.M)
 LINK = re.compile(r"\[[^\]\n]*\]\((?:<([^>\n]+)>|([^()\s]+))(?:\s+\"[^\"]+\")?\)")
 

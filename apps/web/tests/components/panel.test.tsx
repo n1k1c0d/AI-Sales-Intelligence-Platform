@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
 import { afterEach, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { StatusPanel } from "@/features/system-status/panel";
 import type { SystemStatusResponse } from "@/features/system-status/contract";
@@ -45,6 +45,7 @@ it("TC-020 displays all confirmed service statuses", async () => {
   setup().mockResolvedValue(Response.json(snapshot));
   mount();
   expect(await screen.findAllByText("Operational")).toHaveLength(4);
+  expect(screen.getByText("4 checks")).toBeVisible();
 });
 it("TC-021 displays the database warning and HTTP 503", async () => {
   setup().mockResolvedValue(
@@ -130,4 +131,52 @@ it("TC-028 never reports operational for missing or invalid data", async () => {
   expect(screen.queryByText("Operational")).toBeNull();
   await screen.findByText("Status check unavailable");
   expect(screen.getAllByText("Unknown")).toHaveLength(4);
+});
+
+it("times out a stalled BFF request, allows a retry and ignores its late result", async () => {
+  vi.useFakeTimers();
+  try {
+    let completeFirst!: (response: Response) => void;
+    const request = setup()
+      .mockImplementationOnce(
+        () => new Promise<Response>((resolve) => { completeFirst = resolve; }),
+      )
+      .mockResolvedValueOnce(Response.json(snapshot));
+    mount();
+    const signal = request.mock.calls[0][1]!.signal!;
+
+    await act(() => vi.advanceTimersByTimeAsync(60_000));
+    expect(screen.getByRole("button", { name: "Checking…" })).toBeDisabled();
+    expect(signal.aborted).toBe(false);
+    await act(() => vi.advanceTimersByTimeAsync(5_000));
+    expect(signal.aborted).toBe(true);
+    expect(screen.getByText("Status check timed out")).toBeVisible();
+    expect(button()).toBeEnabled();
+
+    await act(async () => {
+      fireEvent.click(button());
+    });
+    expect(screen.getByText("All systems operational")).toBeVisible();
+    await act(async () => {
+      completeFirst(Response.json({}));
+    });
+    expect(screen.getByText("All systems operational")).toBeVisible();
+    expect(request).toHaveBeenCalledTimes(2);
+  } finally {
+    vi.useRealTimers();
+  }
+});
+
+it("aborts an in-flight check and clears its deadline on unmount", () => {
+  vi.useFakeTimers();
+  try {
+    const request = setup().mockImplementation(pending);
+    const view = mount();
+    const signal = request.mock.calls[0][1]!.signal!;
+    view.unmount();
+    expect(signal.aborted).toBe(true);
+    expect(vi.getTimerCount()).toBe(0);
+  } finally {
+    vi.useRealTimers();
+  }
 });

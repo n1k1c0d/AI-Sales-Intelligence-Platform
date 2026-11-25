@@ -2,7 +2,7 @@
 
 ## Состояние разработки
 
-**PHASE 0 — Technical Acceptance Completed.** DM-001–DM-012 завершены. На коммите `382730ceee04b641f44a7fc77394778ae3bb2d87` в `dev` проверены FastAPI, PostgreSQL/pgvector, Next.js и n8n. Прошли 8/8 сквозных сценариев, 107 автоматических тестов и семь jobs GitHub Actions. Приёмка охватывает локальный фундамент. CRM, Sales Analytics, Risk Engine, RAG и AI Agent остаются в плане. DM-101 ожидает независимого ревью и отдельного разрешения владельца. [Доказательства и ограничения](acceptance/PHASE_0_ACCEPTANCE.md) · [Индекс ревью](acceptance/PHASE_0_REVIEW_INDEX.md)
+**PHASE 0 — Technical Acceptance Completed.** DM-001–DM-012 завершены. На коммите `382730ceee04b641f44a7fc77394778ae3bb2d87` в `dev` проверены FastAPI, PostgreSQL/pgvector, Next.js и n8n. Прошли 8/8 сквозных сценариев, 107 автоматических тестов и семь jobs GitHub Actions. Приёмка охватывает локальный фундамент. CRM, Sales Analytics, Risk Engine, RAG и AI Agent остаются в плане. Замечания независимого ревью закрыты локально в DM-012.1. Перед DM-101 ожидаются CI на опубликованных исправлениях и разрешение владельца. [Результаты внешнего ревью](acceptance/PHASE_0_EXTERNAL_REVIEW.md). [Доказательства и ограничения](acceptance/PHASE_0_ACCEPTANCE.md) · [Индекс ревью](acceptance/PHASE_0_REVIEW_INDEX.md)
 
 Проект для отдела продаж образовательных продуктов демонстрирует работу разработчика с отказами БД, наблюдаемостью HTTP, автоматизацией n8n и архитектурой будущей аналитики.
 

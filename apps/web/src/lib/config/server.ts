@@ -1,4 +1,5 @@
 import "server-only";
+import { MAX_API_REQUEST_TIMEOUT_MS } from "./limits";
 
 const dnsLabel = /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/i;
 
@@ -21,7 +22,7 @@ export function getConfig(
   try {
     const url = new URL(raw);
     const timeoutMs = Number(timeout);
-    if (!validHostname(url.hostname) || timeoutMs < 1 || timeoutMs > 60_000)
+    if (!validHostname(url.hostname) || timeoutMs < 1 || timeoutMs > MAX_API_REQUEST_TIMEOUT_MS)
       return null;
     return { origin: url.origin, timeoutMs };
   } catch {

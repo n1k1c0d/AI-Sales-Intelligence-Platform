@@ -86,6 +86,52 @@ def validate_workflow(workflow):
     require(leaves == {s.title() + " Result" for s in STATUSES}, "Unexpected terminal branches")
 
 
+def validate_probe_http(source, status, error):
+    contract_statuses = (200, 503) if source == "readiness" else (200,)
+    if error is None:
+        valid = status == 200
+    elif error in ("DATABASE_NOT_READY", "APPLICATION_NOT_READY"):
+        valid = source == "readiness" and status == 503
+    elif error == "INVALID_RESPONSE":
+        valid = status in contract_statuses
+    elif error == "HTTP_ERROR":
+        valid = status is not None and status not in contract_statuses
+    else:
+        # Configuration and transport failures have no HTTP response.
+        valid = status is None
+    require(valid, "HTTP status contradicts probe outcome")
+
+
+def validate_service_outcomes(services, errors, overall):
+    by_source = {error["source"]: error["code"] for error in errors}
+    require(len(by_source) == len(errors), "Duplicate diagnostic source")
+    health_error = by_source.get("health")
+    ready_error = by_source.get("readiness")
+    validate_probe_http("health", services["backend"]["http_status"], health_error)
+    validate_probe_http("readiness", services["readiness"]["http_status"], ready_error)
+
+    readiness, database = {
+        None: ("operational", "operational"),
+        "DATABASE_NOT_READY": ("degraded", "not_ready"),
+        "APPLICATION_NOT_READY": ("degraded", "unknown"),
+    }.get(ready_error, ("unknown", "unknown"))
+    require(services["readiness"]["status"] == readiness and services["database"]["status"] == database,
+            "Readiness and database statuses contradict the readiness probe")
+
+    transport_errors = {"NETWORK_ERROR", "TIMEOUT"}
+    if health_error is None:
+        backend = "operational"
+        aggregate = "operational" if readiness == "operational" else "degraded"
+    elif readiness != "unknown":
+        backend = aggregate = "degraded"
+    elif health_error in transport_errors and ready_error in transport_errors:
+        backend = aggregate = "unavailable"
+    else:
+        backend = aggregate = "unknown"
+    require(services["backend"]["status"] == backend and overall == aggregate,
+            "Backend or overall status contradicts probe outcomes")
+
+
 def validate_report(report, expected):
     keys = {"schema_version", "workflow", "workflow_version", "execution_id", "started_at",
             "finished_at", "duration_ms", "overall_status", "services", "errors"}
@@ -111,6 +157,7 @@ def validate_report(report, expected):
     for error in report["errors"]:
         require(set(error) == {"code", "message", "source"} and error["source"] in ("health", "readiness"), "Invalid diagnostic error")
         require(error["code"] in {"TIMEOUT", "NETWORK_ERROR", "HTTP_ERROR", "INVALID_RESPONSE", "DATABASE_NOT_READY", "APPLICATION_NOT_READY", "CONFIGURATION_ERROR"}, "Unknown error code")
+    validate_service_outcomes(services, report["errors"], report["overall_status"])
 
 
 if __name__ == "__main__":
