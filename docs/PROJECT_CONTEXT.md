@@ -2,7 +2,7 @@
 
 ## Состояние разработки
 
-**PHASE 0 · Project Foundation.** DM-001–DM-011 приняты. Следующая задача — DM-012, статус READY. Подтверждённых блокеров для её начала нет. В `dev` коммит `f08b53c` получил семь успешных jobs и пять артефактов. Комплексная проверка DM-012 требует чистого checkout, подтверждения миграции, интерфейса, workflow и сохранности данных. [Roadmap](ROADMAP.md) · [Подтверждённый CI](https://github.com/n1k1c0d/AI-Sales-Intelligence-Platform/actions/runs/45515913261)
+**PHASE 0 — Technical Acceptance Completed.** DM-001–DM-012 завершены. На коммите `382730ceee04b641f44a7fc77394778ae3bb2d87` в `dev` проверены FastAPI, PostgreSQL/pgvector, Next.js и n8n. Прошли 8/8 сквозных сценариев, 107 автоматических тестов и семь jobs GitHub Actions. Приёмка охватывает локальный фундамент. CRM, Sales Analytics, Risk Engine, RAG и AI Agent остаются в плане. DM-101 ожидает независимого ревью и отдельного разрешения владельца. [Доказательства и ограничения](acceptance/PHASE_0_ACCEPTANCE.md) · [Индекс ревью](acceptance/PHASE_0_REVIEW_INDEX.md)
 
 Проект для отдела продаж образовательных продуктов демонстрирует работу разработчика с отказами БД, наблюдаемостью HTTP, автоматизацией n8n и архитектурой будущей аналитики.
 

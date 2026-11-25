@@ -35,7 +35,9 @@ docker compose ps
 
 **Опасная операция.** Флаг `-v` у `docker compose down` удаляет именованные тома. Для обычной остановки и диагностики используйте команды из таблицы.
 
-Для разработки на хосте из `apps/api` выполните `uv sync --locked` и `uv run --locked uvicorn dealmind.main:app --reload --no-access-log`. Для готовности БД экспортируйте соответствующие `APP_DB_*` в процесс. Из `apps/web` — `npm ci` и `npm run dev`. Укажите `API_BASE_URL` с фактическим опубликованным портом API, если он отличается от 8000. Выберите свободные порты при одновременной работе с Compose. [Тесты и команды по компонентам](TEST_STRATEGY.md)
+Для разработки на хосте из `apps/api` выполните `uv sync --locked` и `uv run --locked uvicorn dealmind.main:app --reload --no-access-log`. В Windows добавьте `--loop asyncio:SelectorEventLoop` к команде Uvicorn, чтобы Psycopg мог обслуживать асинхронное подключение. [Команда запуска API](../apps/api/README.md). Для готовности БД экспортируйте соответствующие `APP_DB_*` в процесс. Из `apps/web` — `npm ci` и `npm run dev`. Укажите `API_BASE_URL` с фактическим опубликованным портом API, если он отличается от 8000. Выберите свободные порты при одновременной работе с Compose. [Тесты и команды по компонентам](TEST_STRATEGY.md)
+
+Если на Windows `uv sync --locked` завершается с `os error 396` при создании hardlink, выполните в `apps/api` команду `uv sync --locked --link-mode copy`. Она устанавливает те же версии из lockfile. Проверьте импорт командой `uv run --locked python -c "from dealmind.main import app; print(app.title)"`. Ожидаемый вывод — `DealMind API`. Если команда `python` в корне открывает Windows Store, запустите проверку путей через установленный uv: `uv run --no-project --python 3.12 python scripts/check_repository.py`.
 
 ## Миграции и pgvector
 
