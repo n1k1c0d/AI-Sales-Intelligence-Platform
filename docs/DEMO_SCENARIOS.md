@@ -16,6 +16,30 @@
 
 [Скриншот System Overview](assets/system-overview.png) · [Контракт n8n](../automations/n8n/workflows/system-health-check.md) · [Порядок запуска тестовой БД](../apps/api/README.md) · [CI run 45515913261](https://github.com/n1k1c0d/AI-Sales-Intelligence-Platform/actions/runs/45515913261)
 
+## PHASE 1 · проверка датасета DM-103
+
+| Сценарий | Действие и наблюдение |
+| --- | --- |
+| Generate CRM Dataset | Из `apps/api` выполните `uv run --locked python -m dealmind.demo.cli generate --dry-run`. В counts должно быть 800 сделок |
+| Validate Dataset | Повторите команду с теми же seed и anchor. Сверьте validation=PASS, fingerprint и контрольные UUID с manifest |
+| Seed PostgreSQL | Выберите подготовленную выделенную БД ревизии 0002 по инструкции. `python -m dealmind.demo.cli seed --apply` из окружения проекта возвращает CREATED |
+| Verify Dataset Counts | Сопоставьте counts с verified в JSON. Последнее поле получено повторным чтением восьми таблиц в новой сессии |
+| Repeat Seed | Повтор той же команды возвращает ALREADY_EXISTS и ноль inserted во всех таблицах |
+| Inspect Commercial Scenarios | По UUID из SYN-006 и SYN-009 прочитайте deals для одного contact_id. У предыдущей покупки closed_at раньше следующего created_at. Для SYN-012 прочитайте историю по sequence_no и найдите повторный вход |
+| Inspect Risk-oriented Fixtures | Сверьте B-H72 и B-D14 с anchor. B-DUE-NOW равен anchor, B-DUE-BEFORE отстоит на секунду до него, B-DUE-AFTER — на секунду после. У SYN-R10 после старого контакта есть свежая внутренняя заметка |
+
+В psql следующий запрос показывает переходы контрольной сделки. Подставьте UUID из нужной записи manifest.
+
+```sql
+SELECT h.sequence_no, s.code, h.changed_at
+FROM deal_stage_history AS h
+JOIN pipeline_stages AS s ON s.id = h.to_stage_id
+WHERE h.deal_id = '3767dec9-2528-5f64-9049-9488ce8618ed'
+ORDER BY h.sequence_no;
+```
+
+[Настройка и параметры CLI](../data/demo/README.md) · [Контрольные сделки](../data/demo/dataset-manifest.json)
+
 ## Бизнес-демонстрации · PLANNED
 
 | ID и цель | Польза и необходимые компоненты | План действий → ожидаемый результат | Статус и ограничение |

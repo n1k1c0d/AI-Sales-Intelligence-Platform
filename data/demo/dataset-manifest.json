@@ -1,0 +1,126 @@
+{
+  "amounts_by_currency": {
+    "lost": {
+      "EUR": "1117.50",
+      "RUB": "15557900.00"
+    },
+    "open": {
+      "EUR": "4869.00",
+      "RUB": "27506720.00"
+    },
+    "won": {
+      "EUR": "8124.40",
+      "RUB": "18325740.00"
+    }
+  },
+  "anchor_datetime": "2026-11-26T00:00:00Z",
+  "business_timezone": "Europe/Moscow",
+  "contacts_count": 600,
+  "counts": {
+    "activities": 3778,
+    "contacts": 600,
+    "deal_stage_history": 3189,
+    "deals": 800,
+    "organizations": 1,
+    "pipeline_stages": 8,
+    "pipelines": 1,
+    "users": 9
+  },
+  "currency": "RUB",
+  "dataset_fingerprint": "34849fcf7f717ccdb4bd3cfa9c3e3de21bc695ba4a4d3159ab9bc30a0ad10bcb",
+  "dataset_name": "dealmind-demo",
+  "dataset_version": "1.0.0",
+  "deal_statuses": {
+    "lost": 200,
+    "open": 360,
+    "won": 240
+  },
+  "deals_by_manager": {
+    "014a1952-c529-5d04-82b1-49acb306e6c9": 120,
+    "10244a81-0d7c-5c6e-89f2-75a50b68985b": 88,
+    "18d88157-439b-5db4-ab2d-802357212857": 113,
+    "30d329ce-ee75-5472-abce-f19847d014a7": 46,
+    "3a112f9a-022e-56df-a8f9-186a429ef054": 107,
+    "570a1a5f-b299-5557-a2ee-6e402a2050ad": 90,
+    "74ebdcbd-ddcd-56a5-982e-3dc59311e5c3": 100,
+    "d9558b8c-0c9b-5187-8233-5b64181b5acd": 136
+  },
+  "deals_by_stage": {
+    "consultation": 37,
+    "contact_established": 35,
+    "decision_pending": 165,
+    "lost": 200,
+    "new_lead": 53,
+    "offer_sent": 53,
+    "qualified": 17,
+    "won": 240
+  },
+  "deals_count": 800,
+  "deals_with_stage_reentry": 1,
+  "generator_version": "1.0.0",
+  "history_days": 180,
+  "internal_activities": 384,
+  "locale": "ru_RU",
+  "loss_reasons": {
+    "competitor": 16,
+    "no_budget": 40,
+    "no_response": 40,
+    "not_interested": 20,
+    "other": 10,
+    "price": 50,
+    "product_mismatch": 10,
+    "timing": 14
+  },
+  "lost_ratio": "0.25",
+  "managers_count": 8,
+  "meaningful_activities": 3394,
+  "open_follow_up": {
+    "due_now": 1,
+    "missing": 62,
+    "overdue": 85,
+    "planned": 212
+  },
+  "open_ratio": "0.45",
+  "organization_id": "998665f6-0dd1-523d-bd71-232fd1bbe41e",
+  "organization_name": "DealMind Demo Academy",
+  "pipeline_id": "ef69ccd0-958f-5a4d-a512-3a4e5ed3f5c5",
+  "sales_leads_count": 1,
+  "scenario_deals": {
+    "B-D13": "f0164e2c-f1b4-5fa9-8a67-902acfc2df44",
+    "B-D14": "7754cfc9-b484-5865-8264-84d22757c55f",
+    "B-D15": "5fbb4362-1219-57c2-8708-6f3fac8b2c9e",
+    "B-DUE-AFTER": "f2beed80-13fb-5545-98fc-4c5ec8ed2b83",
+    "B-DUE-BEFORE": "d2f1c5ad-c281-57dd-82e3-6dcaaa528bed",
+    "B-DUE-NOW": "664e2cb3-31e7-5072-a519-c642f79ce8eb",
+    "B-H71": "ae133ef0-3b49-5318-9d0f-529813dc1e46",
+    "B-H72": "2a484280-cb3b-52e6-be12-87b03fb5bed0",
+    "B-H73": "d7409c4f-e2ae-5e42-94e2-418f4481cd64",
+    "SYN-001": "608360f3-6a19-5a4b-97f0-8dec0af03f63",
+    "SYN-002": "f25b093e-14a8-5767-86cd-1b7bbae3f5ec",
+    "SYN-003": "a3620735-839b-5798-aa6b-7e37a860770a",
+    "SYN-004": "00938606-26f1-5cc2-a2ec-a85add441118",
+    "SYN-005": "97ac8228-2d87-51dd-864f-68a2f892092d",
+    "SYN-006": "e7d2bcba-2d6a-5579-ad51-d5f9080fd641",
+    "SYN-007": "07da3bf7-566f-5f64-9049-9488ce8618ed",
+    "SYN-008": "ca24378f-a668-5f89-96b0-ef3e763f9e60",
+    "SYN-009": "29953e4a-a89f-55b8-9e6d-3fe76d4ca747",
+    "SYN-010": "3da28cbc-90bb-5add-92fc-69072f71dbd0",
+    "SYN-011": "705a5893-9d36-5012-b66c-cdb409fda6d3",
+    "SYN-012": "3767dec9-2528-5f48-ac3f-8842b11642f1",
+    "SYN-013": "a7a4e381-7edf-5103-98fe-787123ada24e",
+    "SYN-014": "428264ef-f6e6-583c-b7ba-f6760ed26a1f",
+    "SYN-R01": "516f8a86-27be-5693-8f3d-1c9959f1c348",
+    "SYN-R02": "f1722fc3-727a-5153-bd35-3b1eea3875f7",
+    "SYN-R03": "8d71743d-cd37-5fa8-a7f6-9012143299c1",
+    "SYN-R04": "0b871ea3-22cb-53e1-832c-6b72c6b16dfc",
+    "SYN-R05": "ac72af93-abad-50e4-a505-942ee12e48d5",
+    "SYN-R06": "8fce7e56-c429-5cc0-9e8e-7b0fb46bb72b",
+    "SYN-R07": "d72f4614-dfab-5183-a7e4-a20d2b21eac9",
+    "SYN-R08": "4a3fc9fe-d84d-5a4c-bdc4-ce4b7c507244",
+    "SYN-R09": "c743bc79-403b-5b83-9977-397f75633a73",
+    "SYN-R10": "8530b3a5-f50d-5a2b-8942-e7ecdf38a94e",
+    "SYN-R11": "1d36c817-c04e-5e18-8c78-e88d28546802"
+  },
+  "seed": 42,
+  "won_ratio": "0.3"
+}
