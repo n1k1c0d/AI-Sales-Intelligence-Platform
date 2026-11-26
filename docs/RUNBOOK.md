@@ -47,7 +47,7 @@ docker compose run --rm --no-deps api alembic heads
 docker compose exec db sh -c 'exec psql -X -U "$POSTGRES_USER" -d "$POSTGRES_DB"'
 ```
 
-В psql выполните `SELECT extversion FROM pg_extension WHERE extname = 'vector';` и `SELECT version_num FROM alembic_version;`. Для выхода — `\q`. На baseline ожидаются pgvector 0.8.7 и `0001 (head)` в Alembic. Перед обновлением проверьте целевую БД и историю миграций, при наличии ценных данных подготовьте резервную копию. Из корня `docker compose run --rm --no-deps api alembic upgrade head` приводит схему к текущей версии. Downgrade проверяется только в отдельной тестовой БД. Для основной БД он требует отдельного плана восстановления. [Модель данных](DATA_MODEL.md)
+В psql выполните `SELECT extversion FROM pg_extension WHERE extname = 'vector';` и `SELECT version_num FROM alembic_version;`. Для выхода — `\q`. На текущей head ожидаются pgvector 0.8.7, ревизия `0002` и восемь CRM-таблиц. Версия `0001` соответствует инфраструктурной baseline. Перед обновлением проверьте целевую БД и историю миграций, при наличии ценных данных подготовьте резервную копию. Из корня `docker compose run --rm --no-deps api alembic upgrade head` приводит схему к текущей версии. Проверяйте downgrade исключительно в выделенной тестовой БД. Переход `0002 → 0001` удаляет все CRM-таблицы и их данные, сохраняя pgvector. [Модель данных](DATA_MODEL.md)
 
 ## HTTP и Request ID
 

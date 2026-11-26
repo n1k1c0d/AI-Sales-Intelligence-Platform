@@ -8,6 +8,7 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.pool import NullPool
 
+from dealmind import models  # noqa: F401  (register CRM tables in Base.metadata)
 from dealmind.core.config import Settings
 from dealmind.db.base import Base
 from dealmind.db.engine import DatabaseUnavailable, database_url, is_connectivity_error
@@ -18,6 +19,7 @@ def migrate(connection: Connection | None = None) -> None:
         connection=connection,
         dialect_name="postgresql",
         target_metadata=Base.metadata,
+        compare_server_default=True,
         literal_binds=connection is None,
     )
     with context.begin_transaction():

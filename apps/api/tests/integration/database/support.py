@@ -1,9 +1,13 @@
 import os
 import subprocess
 import sys
+from collections.abc import Iterator
+from contextlib import contextmanager
 from pathlib import Path
+from uuid import uuid4
 
 import psycopg
+from psycopg import sql
 
 from dealmind.core.config import Settings
 
@@ -27,6 +31,23 @@ def sql_connection(settings: Settings) -> psycopg.Connection[tuple[object, ...]]
         connect_timeout=3,
         autocommit=True,
     )
+
+
+@contextmanager
+def temporary_database(verified: Settings) -> Iterator[Settings]:
+    """Allocate a private database on the cluster verified by the db_settings fixture."""
+    assert verified.env == "test" and verified.db_name == verified.db_user == "dealmind_test"
+    name = "dealmind_test_crm_" + uuid4().hex
+    identifier = sql.Identifier(name)
+    settings = verified.model_copy(update={"db_name": name})
+    with sql_connection(verified) as admin:
+        admin.execute(sql.SQL("CREATE DATABASE {} TEMPLATE template0").format(identifier))
+        try:
+            with sql_connection(settings) as check:
+                assert check.execute("SELECT current_database()").fetchone() == (name,)
+            yield settings
+        finally:
+            admin.execute(sql.SQL("DROP DATABASE {}").format(identifier))
 
 
 def migrate(settings: Settings, *args: str) -> str:

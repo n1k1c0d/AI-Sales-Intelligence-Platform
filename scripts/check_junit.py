@@ -5,6 +5,8 @@ from xml.etree import ElementTree
 DATABASE_CASES = {
     "test_transaction_visibility_and_cleanup", "test_baseline_round_trip_on_fresh_database",
     "test_recovery_without_app_restart", "test_probe_timeout_while_pool_is_exhausted",
+    "test_crm_round_trip", "test_crm_constraint", "test_external_identity_scopes",
+    "test_failed_transaction_is_atomic",
 }
 
 if __name__ == "__main__":

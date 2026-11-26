@@ -2,7 +2,7 @@ import asyncio
 import json
 import os
 import subprocess
-from collections.abc import AsyncIterator, Callable
+from collections.abc import AsyncIterator, Callable, Iterator
 
 import pytest
 import pytest_asyncio
@@ -12,7 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncEngine
 from dealmind.core.config import Settings
 from dealmind.db.engine import create_database_engine
 
-from .support import COMPOSE, PROJECT, docker, sql_connection
+from .support import COMPOSE, PROJECT, docker, migrate, sql_connection, temporary_database
 
 
 def pytest_asyncio_loop_factories() -> dict[str, Callable[[], asyncio.AbstractEventLoop]]:
@@ -78,6 +78,13 @@ def db_settings(test_container: str) -> Settings:
         row = admin.execute(identity).fetchone()
         assert row and row[0] == "dealmind_test" and f"{row[0]}|{row[1]}" == expected
     return config
+
+
+@pytest.fixture(scope="module")
+def crm_settings(db_settings: Settings) -> Iterator[Settings]:
+    with temporary_database(db_settings) as settings:
+        migrate(settings, "upgrade", "head")
+        yield settings
 
 
 @pytest_asyncio.fixture
