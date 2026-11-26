@@ -4,6 +4,12 @@
 
 ## Предпросмотр без PostgreSQL
 
+Из корня репозитория в PowerShell путь к Python-проекту задаёт флаг `--project`.
+
+```powershell
+uv run --project .\apps\api --locked python -m dealmind.demo.cli generate --dry-run
+```
+
 Из `apps/api` выполните следующие команды. Первый запуск печатает JSON, второй также сохраняет читаемый UTF-8 manifest. Укажите другой путь для экспериментальной конфигурации.
 
 ```shell
@@ -33,6 +39,14 @@ uv run --locked python -m dealmind.demo.cli generate --help
 Запускайте CLI на хосте. Нужна отдельная локальная PostgreSQL с применённой Alembic-ревизией `0002`. Для тестового кластера DealMind команды запуска и проверки приведены в руководстве API. В автоматических тестах каждый сценарий получает свою временную БД после проверки порта, тома и идентификатора кластера. [Тестовая инфраструктура](../../apps/api/README.md)
 
 Для ручной демобазы задайте в текущем окружении все шесть значений. Выберите порт уже подготовленной базы, роль с правами чтения и вставки CRM и её пароль. Пример конфигурации — `APP_ENV=local`, `APP_DB_HOST=127.0.0.1`, `APP_DB_PORT=55433`, `APP_DB_NAME=dealmind_demo`, `APP_DB_USER=dealmind_test`. Задайте `APP_DB_PASSWORD` из локального хранилища. Seeder допускает `local` и `test`, loopback IP и имена `dealmind_demo` / `dealmind_test` с необязательным суффиксом через подчёркивание. Он сверяет фактические имя БД, роль, адрес сервера и ревизию перед вставкой. Миграции выполняются отдельно оператором.
+
+После настройки базы загрузку можно запустить из корня репозитория.
+
+```powershell
+uv run --project .\apps\api --locked python -m dealmind.demo.cli seed --apply
+```
+
+Из `apps/api` можно проверить ревизию и повторить загрузку.
 
 ```shell
 uv run --locked alembic current
